@@ -24,7 +24,10 @@ add_executable(notes main.cc
         sqlite/stmt.cc
         sqlite/stmt.h
         shared.h
-        sqlite/value.h)
+        sqlite/value.h
+        sqlite/field.h
+        sqlite/row.h
+        sqlite/result.h)
 target_link_libraries(notes
         Qt::Core Qt::Gui Qt::Widgets
         sqlite3
