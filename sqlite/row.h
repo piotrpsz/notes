@@ -12,7 +12,7 @@ public:
     Row() = default;
 
     /// Init object with one, initial field.
-    Row(std::string name, Value value) {
+    Row(std::string name, value_t value) {
         data_.emplace_back(std::move(name), std::move(value));
     }
 
@@ -34,7 +34,7 @@ public:
         return data_.size();
     }
 
-    Row &emplace_back(std::string name, Value value) noexcept {
+    Row& emplace_back(std::string name, value_t value) noexcept {
         data_.emplace_back(std::move(name), std::move(value));
         return *this;
     }
@@ -65,9 +65,9 @@ public:
 
     /// Split vector of pairs <name, value> to two vectors. \n
     /// The first one with names, the second one with values.
-    [[nodiscard]] std::pair<vec<std::string>,vec<Value>> split() const noexcept {
-        vec<std::string> names{};
-        vec<Value> values{};
+    [[nodiscard]] std::pair<std::vector<std::string>,std::vector<value_t>> split() const noexcept {
+        std::vector<std::string> names{};
+        std::vector<value_t> values{};
 
         if (not data_.empty()) {
             auto const n = data_.size();
@@ -85,7 +85,7 @@ public:
     }
 
     [[nodiscard]] std::string description() const noexcept {
-        vec<std::string> buffer{};
+        std::vector<std::string> buffer{};
         buffer.reserve(data_.size());
 
         for (auto const& f : data_) {

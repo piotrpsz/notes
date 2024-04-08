@@ -8,12 +8,12 @@
 #include <fmt/core.h>
 
 class Field {
-    std::pair<std::string,Value> data_{};
+    std::pair<std::string,value_t> data_{};
 public:
     Field() = default;
     explicit Field(const std::string& name) : data_{name, {}} {}
-    explicit Field(std::string name, Value v) : data_{std::move(name), std::move(v)} {}
-    explicit Field(std::pair<std::string, Value> data) : data_{std::move(data)} {}
+    explicit Field(std::string name, value_t v) : data_{std::move(name), std::move(v)} {}
+    explicit Field(std::pair<std::string, value_t> data) : data_{std::move(data)} {}
     ~Field() = default;
 
     Field(Field const&) = default;

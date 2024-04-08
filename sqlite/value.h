@@ -6,33 +6,31 @@
 #include "../shared.h"
 #include <variant>
 
-namespace index {
+class value_t {
+    std::variant<std::monostate, i64, f64, std::string, std::vector<u8>> data_{};
+public:
     enum {
         Monostate, Integer, Double, String, Vector
     };
-}
 
-class Value {
-    std::variant<std::monostate, i64, f64, std::string, vec<u8>> data_{};
-public:
-    Value() = default;
-    explicit Value(std::integral auto v) : data_{static_cast<i64>(v)} {}
-    explicit Value(std::floating_point auto v) : data_{static_cast<f64>(v)} {}
-    explicit Value(std::string v) : data_{std::move(v)} {}
-    explicit Value(vec<u8> v) : data_{std::move(v)} {}
-    ~Value() = default;
+    value_t() = default;
+    value_t(std::integral auto v) : data_{static_cast<i64>(v)} {}
+    value_t(std::floating_point auto v) : data_{static_cast<f64>(v)} {}
+    value_t(std::string v) : data_{std::move(v)} {}
+    value_t(std::vector<u8> v) : data_{std::move(v)} {}
+    ~value_t() = default;
 
     template<typename T>
-    explicit Value(std::optional<T> v) {
+    explicit value_t(std::optional<T> v) {
         if (v) data_ = v.value();
         else data_ = {};
     }
 
     // default copy, default move
-    Value(Value const&) = default;
-    Value(Value&&) = default;
-    Value& operator=(Value const&) = default;
-    Value& operator=(Value&&) = default;
+    value_t(value_t const&) = default;
+    value_t(value_t&&) = default;
+    value_t& operator=(value_t const&) = default;
+    value_t& operator=(value_t&&) = default;
 
     auto operator()() && {
         return std::move(data_);
@@ -41,7 +39,7 @@ public:
         return data_;
     }
     [[nodiscard]] bool null() const noexcept {
-        return data_.index() == index::Monostate;
+        return data_.index() == Monostate;
     }
     [[nodiscard]] uint index() const noexcept {
         return data_.index();
@@ -49,44 +47,43 @@ public:
 
     // getting values without checking
     [[nodiscard]] i64 int64() const noexcept {
-        return std::get<index::Integer>(data_);
+        return std::get<Integer>(data_);
     }
     [[nodiscard]] f64 float64() const noexcept {
-        return std::get<index::Double>(data_);
+        return std::get<Double>(data_);
     }
     [[nodiscard]] std::string str() const noexcept {
-        return std::get<index::String>(data_);
+        return std::get<String>(data_);
     }
     [[nodiscard]] std::vector<u8> vec() const noexcept {
-        return std::get<index::Vector>(data_);
+        return std::get<Vector>(data_);
     }
 
     // getting values with checking
     [[nodiscard]] std::optional<i64> int64_if() const noexcept {
-        if (data_.index() == index::Integer)
+        if (data_.index() == Integer)
             return int64();
         return {};
     }
     [[nodiscard]] std::optional<f64> float64_if() const noexcept {
-        if (data_.index() == index::Double)
+        if (data_.index() == Double)
             return float64();
         return {};
     }
     [[nodiscard]] std::optional<std::string> str_if() const noexcept {
-        if (data_.index() == index::String)
+        if (data_.index() == String)
             return str();
         return {};
     }
     [[nodiscard]] std::optional<std::vector<u8>> vec_if() const noexcept {
-        if (data_.index() == index::Vector)
+        if (data_.index() == Vector)
             return vec();
         return {};
     }
 
-    /// Value string description.
+    /// value_t string description.
     [[nodiscard]] std::string description() const noexcept {
         switch (data_.index()) {
-            using namespace index;
             case  Monostate:
                 return "NULL";
             case Integer:

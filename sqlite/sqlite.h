@@ -4,7 +4,7 @@
 #pragma once
 
 #include "logger.h"
-#include "../types.h"
+#include "../shared.h"
 #include <sqlite3.h>
 #include <string>
 #include <array>

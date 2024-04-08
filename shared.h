@@ -26,8 +26,6 @@ using uint = unsigned int;
 using f32 = float;
 using f64 = double;
 
-template<typename T>
-using vec = std::vector<T>;
 namespace fs = std::filesystem;
 
 namespace shared {
@@ -69,7 +67,7 @@ namespace shared {
         return trim_left(trim_right(std::move(s)));
     }
 
-    std::vector<std::string> split(std::string_view sv, char const delimiter) noexcept {
+    static inline std::vector<std::string> split(std::string_view sv, char const delimiter) noexcept {
         // It is better to count delimiters than to reallocate the vector later.
         auto const n = std::accumulate(
                 sv.begin(),

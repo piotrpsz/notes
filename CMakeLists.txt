@@ -19,7 +19,6 @@ find_package(Qt6 COMPONENTS
 add_executable(notes main.cc
         sqlite/sqlite.cc
         sqlite/sqlite.h
-        types.h
         sqlite/logger.h
         sqlite/stmt.cc
         sqlite/stmt.h
@@ -27,7 +26,8 @@ add_executable(notes main.cc
         sqlite/value.h
         sqlite/field.h
         sqlite/row.h
-        sqlite/result.h)
+        sqlite/result.h
+        sqlite/query.h)
 target_link_libraries(notes
         Qt::Core Qt::Gui Qt::Widgets
         sqlite3
