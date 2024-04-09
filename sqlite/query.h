@@ -12,10 +12,13 @@ public:
     /// Query for name and arguments with fold-expression
     template<typename... T>
     explicit query_t(std::string query, T... args) : query_{std::move(query)} {
-        (..., values_.push_back(Value(args)));
+        (..., values_.push_back(value_t(args)));
     }
     /// Query for name (without arguments).
     explicit query_t(std::string query) : query_{std::move(query)} {}
+    explicit query_t(std::string query, std::vector<value_t> data)
+        : query_{std::move(query)}
+        , values_{std::move(data)} {}
     ~query_t() = default;
 
     query_t(query_t const&) = default;

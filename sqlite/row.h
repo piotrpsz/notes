@@ -6,25 +6,22 @@
 #include "field.h"
 
 
-class Row {
+class row_t {
     std::vector<Field> data_{};
 public:
-    Row() = default;
+    row_t() = default;
 
     /// Init object with one, initial field.
-    Row(std::string name, value_t value) {
+    row_t(std::string name, value_t value) {
         data_.emplace_back(std::move(name), std::move(value));
     }
 
-    ~Row() = default;
+    ~row_t() = default;
 
-    Row(Row const &) = default;
-
-    Row &operator=(Row const &) = default;
-
-    Row(Row &&) = default;
-
-    Row &operator=(Row &&) = default;
+    row_t(row_t const&) = default;
+    row_t& operator=(row_t const&) = default;
+    row_t(row_t&&) = default;
+    row_t& operator=(row_t&&) = default;
 
     [[nodiscard]] bool empty() const noexcept {
         return data_.empty();
@@ -34,23 +31,20 @@ public:
         return data_.size();
     }
 
-    Row& emplace_back(std::string name, value_t value) noexcept {
+    row_t& emplace_back(std::string name, value_t value) noexcept {
         data_.emplace_back(std::move(name), std::move(value));
         return *this;
     }
-
-    Row &add(const std::string &name) {
+    row_t& add(const std::string &name) {
         data_.emplace_back(name);
         return *this;
     }
-
-    Row &add(Field f) noexcept {
+    row_t& add(Field f) noexcept {
         data_.push_back(std::move(f));
         return *this;
     }
-
     template<typename T>
-    Row &add(std::string name, std::optional<T> value) noexcept {
+    row_t& add(std::string name, std::optional<T> value) noexcept {
         return value
                ? add(std::move(name), std::move(*value))
                : add(name);
@@ -60,8 +54,8 @@ public:
     using const_iterator = std::vector<Field>::const_iterator;
     iterator begin() { return data_.begin(); }
     iterator end() { return data_.end(); }
-    [[nodiscard]] const_iterator cbegin() const { return data_.cbegin(); }
-    [[nodiscard]] const_iterator cend() const { return data_.cend(); }
+    [[maybe_unused]] [[nodiscard]] const_iterator cbegin() const { return data_.cbegin(); }
+    [[maybe_unused]] [[nodiscard]] const_iterator cend() const { return data_.cend(); }
 
     /// Split vector of pairs <name, value> to two vectors. \n
     /// The first one with names, the second one with values.

@@ -5,19 +5,19 @@
 
 #include "row.h"
 
-class Result {
-    vec<Row> data_{};
+class result_t {
+    std::vector<row_t> data_{};
 public:
-    Result() = default;
-    explicit Result(Row row) {
+    result_t() = default;
+    explicit result_t(row_t row) {
         data_.push_back(std::move(row));
     }
-    ~Result() = default;
+    ~result_t() = default;
 
-    Result(Result const&) = default;
-    Result& operator=(Result const&) = default;
-    Result(Result &&) = default;
-    Result &operator=(Result &&) = default;
+    result_t(result_t const&) = default;
+    result_t& operator=(result_t const&) = default;
+    result_t(result_t &&) = default;
+    result_t& operator=(result_t&&) = default;
 
     [[nodiscard]] auto empty() const noexcept {
         return data_.empty();
@@ -25,9 +25,12 @@ public:
     [[nodiscard]] auto size() const noexcept {
         return data_.size();
     }
+    void push_back(row_t row) noexcept {
+        data_.push_back(std::move(row));
+    }
 
-    using iterator = std::vector<Row>::iterator;
-    using const_iterator = std::vector<Row>::const_iterator;
+    using iterator = std::vector<row_t>::iterator;
+    using const_iterator = std::vector<row_t>::const_iterator;
     iterator begin()  { return data_.begin(); }
     iterator end() { return data_.end(); }
     [[maybe_unused]] [[nodiscard]] const_iterator cbegin() const { return data_.cbegin(); }

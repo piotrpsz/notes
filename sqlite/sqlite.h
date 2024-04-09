@@ -5,6 +5,8 @@
 
 #include "logger.h"
 #include "../shared.h"
+#include "stmt.h"
+#include "query.h"
 #include <sqlite3.h>
 #include <string>
 #include <array>
@@ -40,6 +42,39 @@ public:
     bool close() noexcept;
     bool open(fs::path const &path, bool read_only = false) noexcept;
     bool create(fs::path const &path, std::function<bool(SQLite*)> const& lambda, bool override = false) noexcept;
+
+    //------- EXEC ----------------------------------------
+    [[nodiscard]] bool exec(query_t const& query) const noexcept {
+        return Stmt(db_).exec_without_result(query);
+    }
+    template<typename... T>
+    [[nodiscard]] bool exec(std::string const& str, T... args) const noexcept {
+        return exec(query_t{str, args...});
+    }
+    //------- INSERT --------------------------------------
+    [[nodiscard]] i64 insert(query_t const& query) const noexcept {
+        return Stmt(db_).exec_without_result(query) ? sqlite3_last_insert_rowid(db_) : -1;
+    }
+    template<typename... T>
+    [[nodiscard]] bool insert(std::string const& str, T... args) const noexcept {
+        return insert(query_t{str, args...});
+    }
+    //------- UPDATE --------------------------------------
+    [[nodiscard]] bool update(query_t const& query) const noexcept {
+        return Stmt(db_).exec_without_result(query);
+    }
+    template<typename... T>
+    [[nodiscard]] bool update(std::string const& str, T... args) const noexcept {
+        return update(query_t{str, args...});
+    }
+    //------- SELECT --------------------------------------
+    [[nodiscard]] std::optional<result_t> select(query_t const& query) const noexcept {
+        return Stmt(db_).exec_with_result(query);
+    }
+    template<typename... T>
+    [[nodiscard]] std::optional<result_t> select(std::string const& str, T... args) const noexcept {
+        return select(query_t{str, args...});
+    }
 
 private:
     SQLite() {

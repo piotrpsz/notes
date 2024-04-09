@@ -3,8 +3,10 @@
 //
 #pragma once
 
+#include <optional>
 #include <sqlite3.h>
 #include "query.h"
+#include "result.h"
 
 class Stmt {
     sqlite3* db_{};
@@ -19,6 +21,6 @@ public:
     Stmt& operator=(Stmt const&) = default;
     Stmt& operator=(Stmt&&) = default;
 
-    bool exec(query_t const& query) noexcept;
-
+    bool exec_without_result(query_t const& query) noexcept;
+    std::optional<result_t> exec_with_result(query_t const& query) noexcept;
 };
