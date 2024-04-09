@@ -22,47 +22,15 @@
 //
 // Created by piotr on 09.04.24.
 //
+#pragma once
 
 /*------- include files:
 -------------------------------------------------------------------*/
-#include "model/category.h"
-#include "model/note.h"
-#include "sqlite/sqlite.h"
-#include "notes/MainWindow.h"
-#include <QApplication>
-#include <fmt/core.h>
-#include <string>
+#include <QTreeWidget>
 
-
-bool open_or_create_database() noexcept {
-    using namespace std::string_literals;
-    static auto const DatabasePath = "/home/piotr/notes.sqlite"s;
-
-    // Try to open.
-    if (SQLite::instance().open(DatabasePath))
-        return true;
-
-    // Can't open so create one.
-    return SQLite::instance().create(DatabasePath, [](SQLite const& db){
-        // Create tables.
-        return db.exec(Category::Create) and db.exec(Note::Create);
-    });
-}
-
-
-int main(int argc, char *argv[]) {
-    if (not open_or_create_database()) {
-        fmt::print(stderr, "Database creation error\n");
-        return 1;
-    }
-
-    QCoreApplication::setApplicationName("notes");
-    QCoreApplication::setApplicationVersion("0.0.1");
-    QCoreApplication::setOrganizationName("Piotr Pszczółkowski");
-    QCoreApplication::setOrganizationDomain("beesoft.pl");
-
-    QApplication app(argc, argv);
-    MainWindow win;
-    win.show();
-    return QApplication::exec();
-}
+class CategoryTree : public QTreeWidget {
+    Q_OBJECT
+public:
+    CategoryTree(QWidget* = nullptr);
+    ~CategoryTree() override = default;
+};

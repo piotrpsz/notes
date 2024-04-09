@@ -31,7 +31,17 @@ add_executable(notes main.cc
         model/category.cc
         model/category.h
         model/note.cc
-        model/note.h)
+        model/note.h
+        notes/MainWindow.cc
+        notes/MainWindow.h
+        notes/Settings.h
+        notes/types.h
+        notes/CategoryTree.cc
+        notes/CategoryTree.h
+        notes/NotesWorkspace.cc
+        notes/NotesWorkspace.h
+        notes/NotesTable.cc
+        notes/NotesTable.h)
 target_link_libraries(notes
         Qt::Core Qt::Gui Qt::Widgets
         sqlite3

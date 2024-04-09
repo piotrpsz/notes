@@ -25,44 +25,23 @@
 
 /*------- include files:
 -------------------------------------------------------------------*/
-#include "model/category.h"
-#include "model/note.h"
-#include "sqlite/sqlite.h"
-#include "notes/MainWindow.h"
-#include <QApplication>
-#include <fmt/core.h>
-#include <string>
+#include <QSettings>
+#include <optional>
+#include "types.h"
 
-
-bool open_or_create_database() noexcept {
-    using namespace std::string_literals;
-    static auto const DatabasePath = "/home/piotr/notes.sqlite"s;
-
-    // Try to open.
-    if (SQLite::instance().open(DatabasePath))
-        return true;
-
-    // Can't open so create one.
-    return SQLite::instance().create(DatabasePath, [](SQLite const& db){
-        // Create tables.
-        return db.exec(Category::Create) and db.exec(Note::Create);
-    });
-}
-
-
-int main(int argc, char *argv[]) {
-    if (not open_or_create_database()) {
-        fmt::print(stderr, "Database creation error\n");
-        return 1;
+/*------- class:
+-------------------------------------------------------------------*/
+class Settings : public QSettings {
+public:
+    bool save(qstr const& key, qvar const& data) noexcept {
+        setValue(key, data);
+        return NoError == status();
     }
 
-    QCoreApplication::setApplicationName("notes");
-    QCoreApplication::setApplicationVersion("0.0.1");
-    QCoreApplication::setOrganizationName("Piotr Pszczółkowski");
-    QCoreApplication::setOrganizationDomain("beesoft.pl");
-
-    QApplication app(argc, argv);
-    MainWindow win;
-    win.show();
-    return QApplication::exec();
-}
+    std::optional<qvar> read(qstr const& key) noexcept {
+        if (contains(key))
+            if (auto data = value(key); status() == NoError)
+                return std::move(data);
+        return {};
+    }
+};
