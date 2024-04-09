@@ -27,7 +27,11 @@ add_executable(notes main.cc
         sqlite/field.h
         sqlite/row.h
         sqlite/result.h
-        sqlite/query.h)
+        sqlite/query.h
+        model/category.cc
+        model/category.h
+        model/note.cc
+        model/note.h)
 target_link_libraries(notes
         Qt::Core Qt::Gui Qt::Widgets
         sqlite3

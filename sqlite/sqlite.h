@@ -41,7 +41,7 @@ public:
 
     bool close() noexcept;
     bool open(fs::path const &path, bool read_only = false) noexcept;
-    bool create(fs::path const &path, std::function<bool(SQLite*)> const& lambda, bool override = false) noexcept;
+    bool create(fs::path const &path, std::function<bool(SQLite const&)> const& lambda, bool override = false) noexcept;
 
     //------- EXEC ----------------------------------------
     [[nodiscard]] bool exec(query_t const& query) const noexcept {

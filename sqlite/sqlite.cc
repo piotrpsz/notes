@@ -40,7 +40,7 @@ bool SQLite::open(fs::path const &path, bool const read_only) noexcept {
 }
 
 // Create a new database file.
-bool SQLite::create(fs::path const &path, std::function<bool(SQLite *)> const& lambda, bool override) noexcept {
+bool SQLite::create(fs::path const &path, std::function<bool(SQLite const&)> const& lambda, bool override) noexcept {
     if (db_ not_eq nullptr) {
         fmt::print(stderr, "database is already opened\n");
         return false;
@@ -56,7 +56,7 @@ bool SQLite::create(fs::path const &path, std::function<bool(SQLite *)> const& l
     if (path not_eq InMemory) {
         if (fs::exists(path, err)) {
             if (override) { // is this what the user wants?
-                if (!fs::remove(path)) {
+                if (not fs::remove(path)) {
                     fmt::print(stderr, "database file could not be deleted\n");
                     return false;
                 }
@@ -69,7 +69,7 @@ bool SQLite::create(fs::path const &path, std::function<bool(SQLite *)> const& l
     auto const flags = SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE;
     auto const database_path = path.string();
     if (SQLITE_OK == sqlite3_open_v2(database_path.c_str(), &db_, flags, nullptr)) {
-        if (!lambda(this))
+        if (not lambda(*this))
             return false;
         fmt::print("The database created successfully: {}\n", path.string());
         return true;
