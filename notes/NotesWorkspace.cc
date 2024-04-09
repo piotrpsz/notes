@@ -23,10 +23,16 @@
 // Created by piotr on 09.04.24.
 //
 
+/*------- include files:
+-------------------------------------------------------------------*/
 #include "NotesWorkspace.h"
+#include "NotesTable.h"
+#include "NoteWidget.h"
 
 NotesWorkspace::NotesWorkspace(QWidget* const parent) :
-        QSplitter(Qt::Horizontal, parent)
+        QSplitter(Qt::Vertical, parent)
 {
-
+    setHandleWidth(1);
+    addWidget(new NotesTable);
+    addWidget(new NoteWidget);
 }

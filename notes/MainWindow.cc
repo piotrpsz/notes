@@ -27,20 +27,25 @@
 -------------------------------------------------------------------*/
 #include "MainWindow.h"
 #include "Settings.h"
+#include "NotesWorkspace.h"
+#include "CategoryTree.h"
 #include <QApplication>
 #include <QSplitter>
 #include <fmt/core.h>
 
 MainWindow::MainWindow(QWidget* const parent) :
-        QMainWindow(parent),
-        splitter_{new QSplitter(Qt::Vertical)}
+        QMainWindow(parent)
 {
     auto app_name = QCoreApplication::applicationName().toStdString();
     auto app_ver = QCoreApplication::applicationVersion().toStdString();
     auto title = fmt::format("{} ver. {}", app_name, app_ver);
     setWindowTitle(qstr::fromStdString(title));
 
-
+    auto const splitter = new QSplitter(Qt::Horizontal);
+    splitter->setHandleWidth(1);
+    splitter->addWidget(new CategoryTree);
+    splitter->addWidget(new NotesWorkspace);
+    setCentralWidget(splitter);
 }
 
 void MainWindow::showEvent(QShowEvent* const event) {

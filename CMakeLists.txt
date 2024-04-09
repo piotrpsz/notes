@@ -41,7 +41,9 @@ add_executable(notes main.cc
         notes/NotesWorkspace.cc
         notes/NotesWorkspace.h
         notes/NotesTable.cc
-        notes/NotesTable.h)
+        notes/NotesTable.h
+        notes/NoteWidget.cc
+        notes/NoteWidget.h)
 target_link_libraries(notes
         Qt::Core Qt::Gui Qt::Widgets
         sqlite3

@@ -24,8 +24,15 @@
 //
 #pragma once
 
+/*------- include files:
+-------------------------------------------------------------------*/
+#include <QTableWidget>
 
-
-class NotesTable {
-
+/*------- class:
+-------------------------------------------------------------------*/
+class NotesTable : public QTableWidget {
+    Q_OBJECT
+public:
+    NotesTable(QWidget* = nullptr);
+    ~NotesTable() override = default;
 };

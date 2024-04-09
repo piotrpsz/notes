@@ -22,13 +22,17 @@
 //
 // Created by piotr on 09.04.24.
 //
+#pragma once
 
 /*------- include files:
 -------------------------------------------------------------------*/
-#include "NotesTable.h"
+#include <QWidget>
 
-NotesTable::NotesTable(QWidget* const parent) :
-        QTableWidget(parent)
-{
-
-}
+/*------- class:
+-------------------------------------------------------------------*/
+class NoteWidget : public QWidget {
+    Q_OBJECT
+public:
+    explicit NoteWidget(QWidget* = nullptr);
+    ~NoteWidget() override = default;
+};

@@ -25,10 +25,10 @@
 
 /*------- include files:
 -------------------------------------------------------------------*/
-#include "NotesTable.h"
+#include "NoteWidget.h"
 
-NotesTable::NotesTable(QWidget* const parent) :
-        QTableWidget(parent)
+NoteWidget::NoteWidget(QWidget* const parent) :
+        QWidget(parent)
 {
 
 }
