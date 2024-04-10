@@ -7,12 +7,15 @@
 
 class Category {
 public:
-    static inline std::string const Create = R"(
+    static inline std::string const CreateTable = R"(
         CREATE TABLE category (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             pid INTEGER,
             name TEXT NOT NULL COLLATE NOCASE
         );
+    )";
+    static inline std::string const CreateIndex = R"(
+        CREATE INDEX category_pid_index ON category(pid, id);
     )";
 };
 

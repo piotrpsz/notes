@@ -48,7 +48,7 @@ public:
 private:
     void mousePressEvent(QMouseEvent*) override;
     static std::optional<Category> category_dialog(Category&& category) noexcept;
-
+    void add_items_for(QTreeWidgetItem* item) noexcept;
 private slots:
     void add_new_main_category() noexcept;
 

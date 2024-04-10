@@ -25,6 +25,7 @@
 
 /*------- include files:
 -------------------------------------------------------------------*/
+#include "../sqlite/sqlite.h"
 #include "CategoryTree.h"
 #include <QMenu>
 #include <QLabel>
@@ -57,6 +58,8 @@ CategoryTree::CategoryTree(QWidget* const parent) :
     header()->hide();
     setColumnCount(1);
     setHorizontalScrollMode(ScrollPerPixel);
+
+    add_items_for(root_);
 }
 
 void CategoryTree::mousePressEvent(QMouseEvent* const event) {
@@ -72,12 +75,27 @@ void CategoryTree::mousePressEvent(QMouseEvent* const event) {
 void CategoryTree::add_new_main_category() noexcept {
     if (auto opt = category_dialog(Category{}); opt) {
         auto [id, pid, name] = opt.value();
-        auto const item = new QTreeWidgetItem(root_);
-        item->setText(0,name);
-        item->setData(0, IdRole, id);
-        item->setData(0, PidRole, pid);
-        root_->setExpanded(true);
+        id  = SQLite::instance().insert("INSERT INTO category (pid, name) VALUES (?,?)", 0, name.toStdString());
+        if (id not_eq -1) {
+            auto const item = new QTreeWidgetItem(root_);
+            item->setText(0, name);
+            item->setData(0, IdRole, id);
+            item->setData(0, PidRole, pid);
+            root_->setExpanded(true);
+        }
     }
+}
+
+void CategoryTree::add_items_for(QTreeWidgetItem* const parent) noexcept {
+    static std::string const query = "SELECT * FROM category WHERE pid=? ORDER BY name";
+
+    auto id = parent->data(0, IdRole).toInt();
+    if (auto opt = SQLite::instance().select(query, id); opt)
+        if (auto result = opt.value(); not result.empty())
+            for (auto&& row : result) {
+                auto const item = new QTreeWidgetItem(parent);
+                item->setText(0, row.)
+            }
 }
 
 // Run the dialog for category edition.

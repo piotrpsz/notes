@@ -35,7 +35,8 @@
 
 MainWindow::MainWindow(QWidget *const parent) :
         QMainWindow(parent),
-        splitter_{new QSplitter(Qt::Horizontal)} {
+        splitter_{new QSplitter(Qt::Horizontal)}
+{
     auto app_name = QCoreApplication::applicationName().toStdString();
     auto app_ver = QCoreApplication::applicationVersion().toStdString();
     auto title = fmt::format("{} ver. {}", app_name, app_ver);
