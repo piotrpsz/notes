@@ -33,6 +33,7 @@
 -------------------------------------------------------------------*/
 class QShowEvent;
 class QCloseEvent;
+class QSplitter;
 
 /*------- class:
 -------------------------------------------------------------------*/
@@ -48,8 +49,11 @@ private:
 
 private:
     bool first_show_{true};
+    QSplitter* const splitter_;
 
     static inline qstr const MainWindowSizeKey = "MainWindow/Size";
     static inline qstr const MainWindowPosKey = "MainWindow/Position";
     static inline qstr const MainWindowStateKey = "MainWindow/State";
+    static inline qstr const MainWindowW0Key = "MainWindow/Sizes/W0";
+    static inline qstr const MainWindowW1Key = "MainWindow/Sizes/W1";
 };

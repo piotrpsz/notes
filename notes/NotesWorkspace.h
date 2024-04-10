@@ -26,7 +26,13 @@
 
 /*------- include files:
 -------------------------------------------------------------------*/
+#include "types.h"
 #include <QSplitter>
+
+/*------- forward declarations:
+-------------------------------------------------------------------*/
+class QShowEvent;
+class QCloseEvent;
 
 /*------- class:
 -------------------------------------------------------------------*/
@@ -34,6 +40,13 @@ class NotesWorkspace : public QSplitter {
     Q_OBJECT
 public:
     explicit NotesWorkspace(QWidget* = nullptr);
-    ~NotesWorkspace() override = default;
+    ~NotesWorkspace() override;
+
+private:
+    void showEvent(QShowEvent*) override;
+
+    bool first_show_{true};
+    static inline qstr const SizesH0Key = "NotesWorkspace/Sizes/H0";
+    static inline qstr const SizesH1Key = "NotesWorkspace/Sizes/H1";
 };
 

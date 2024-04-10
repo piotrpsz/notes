@@ -42,8 +42,13 @@
 #include <fmt/core.h>
 
 CategoryTree::CategoryTree(QWidget* const parent) :
-        QTreeWidget(parent)
+        QTreeWidget(parent),
+        root_{new QTreeWidgetItem(this)}
 {
+    root_->setText(0, "Categories");
+    root_->setData(0, IdRole, 0);
+    root_->setData(0, PidRole, 0);
+
     auto p = palette();
     p.setColor(QPalette::Base, QColor{60, 60, 60, 255});
     setAutoFillBackground(true);
@@ -65,45 +70,51 @@ void CategoryTree::mousePressEvent(QMouseEvent* const event) {
 }
 
 void CategoryTree::add_new_main_category() noexcept {
-    fmt::print("CategoryTree::add_new_main_category\n");
-    category_dialog();
+    if (auto opt = category_dialog(Category{}); opt) {
+        auto [id, pid, name] = opt.value();
+        auto const item = new QTreeWidgetItem(root_);
+        item->setText(0,name);
+        item->setData(0, IdRole, id);
+        item->setData(0, PidRole, pid);
+        root_->setExpanded(true);
+    }
 }
 
-void CategoryTree::category_dialog(int const id, int const pid, qstr const& name) noexcept {
+// Run the dialog for category edition.
+std::optional<CategoryTree::Category> CategoryTree::category_dialog(Category&& category) noexcept {
     auto const parent_layout = new QHBoxLayout;
-    parent_layout->addWidget(new QLabel("Parent:"));
-    if (pid == 0)
-        parent_layout->addWidget(new QLabel("no parent (this is the main category)."));
-
+    if (category.pid == 0)
+        parent_layout->addWidget(new QLabel("No parents, this will be the new main category."));
 
     auto const editor = new QLineEdit;
-    editor->setText(name);
+    editor->setText(category.name);
 
     auto const edit_layout = new QHBoxLayout;
     edit_layout->addWidget(new QLabel{"Category name:"});
     edit_layout->addWidget(editor);
 
-
     auto const separator = new QFrame;
     separator->setFrameShape(QFrame::HLine);
     separator->setFrameShadow(QFrame::Sunken);
 
-
-
     auto const dialog = std::make_unique<QDialog>();
-
-    auto button_box = new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::Cancel);
+    auto button_box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     connect(button_box, &QDialogButtonBox::accepted, dialog.get(), &QDialog::accept);
     connect(button_box, &QDialogButtonBox::rejected, dialog.get(), &QDialog::reject);
 
     auto const main_layout = new QVBoxLayout;
     main_layout->addLayout(parent_layout);
     main_layout->addWidget(separator);
+    main_layout->addSpacing(10);
     main_layout->addLayout(edit_layout);
     main_layout->addSpacing(10);
     main_layout->addWidget(button_box);
-
-    dialog->setWindowTitle("Add new main category");
     dialog->setLayout(main_layout);
-    dialog->exec();
+    dialog->setWindowTitle("Add new main category");
+
+    if (dialog->exec() and not editor->text().isEmpty()) {
+        category.name = std::move(editor->text());
+        return std::move(category);
+    }
+    return {};
 }

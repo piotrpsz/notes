@@ -28,6 +28,7 @@
 -------------------------------------------------------------------*/
 #include "types.h"
 #include <QTreeWidget>
+#include <optional>
 
 /*------- forward declarations:
 -------------------------------------------------------------------*/
@@ -39,17 +40,19 @@ class CategoryTree : public QTreeWidget {
     Q_OBJECT
     enum { IdRole = Qt::UserRole+1, PidRole};
 public:
+    struct Category { int id{}, pid{}; qstr name{}; };
+public:
     explicit CategoryTree(QWidget* = nullptr);
     ~CategoryTree() override = default;
 
 private:
     void mousePressEvent(QMouseEvent*) override;
-    static void category_dialog(int id = 0, int pid = 0, qstr const& name = {}) noexcept;
+    static std::optional<Category> category_dialog(Category&& category) noexcept;
 
 private slots:
     void add_new_main_category() noexcept;
 
 private:
-    QTreeWidgetItem* root_{};
+    QTreeWidgetItem* const root_;
 
 };
