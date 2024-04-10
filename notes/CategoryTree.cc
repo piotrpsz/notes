@@ -26,9 +26,60 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include "CategoryTree.h"
+#include <QMenu>
+#include <QLabel>
+#include <QDialog>
+#include <QAction>
+#include <QLineEdit>
+#include <QHeaderView>
+#include <QMouseEvent>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QTreeWidgetItem>
+#include <memory>
+#include <fmt/core.h>
 
 CategoryTree::CategoryTree(QWidget* const parent) :
         QTreeWidget(parent)
 {
+    auto p = palette();
+    p.setColor(QPalette::Base, QColor{60, 60, 60, 255});
+    setAutoFillBackground(true);
+    setPalette(p);
 
+    header()->hide();
+    setColumnCount(1);
+    setHorizontalScrollMode(ScrollPerPixel);
+}
+
+void CategoryTree::mousePressEvent(QMouseEvent* const event) {
+    if (event->button() == Qt::RightButton) {
+        auto const action = new QAction("New main category");
+        connect(action, &QAction::triggered, this, &CategoryTree::add_new_main_category);
+        auto const menu = new QMenu(this);
+        menu->addAction(action);
+        menu->popup(viewport()->mapToGlobal(event->pos()));
+    }
+}
+
+void CategoryTree::add_new_main_category() noexcept {
+    fmt::print("CategoryTree::add_new_main_category\n");
+    category_dialog();
+}
+
+void CategoryTree::category_dialog(int const id, int const pid, qstr const& name) noexcept {
+    auto const editor = new QLineEdit;
+    editor->setText(name);
+
+    auto const edit_layout = new QHBoxLayout;
+    edit_layout->addWidget(new QLabel{"Category name:"});
+    edit_layout->addWidget(editor);
+
+    auto const main_layout = new QVBoxLayout;
+    main_layout->addLayout(edit_layout);
+
+    auto const dialog = std::make_unique<QDialog>();
+    dialog->setWindowTitle("Add new main category");
+    dialog->setLayout(main_layout);
+    dialog->exec();
 }

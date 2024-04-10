@@ -26,11 +26,30 @@
 
 /*------- include files:
 -------------------------------------------------------------------*/
+#include "types.h"
 #include <QTreeWidget>
 
+/*------- forward declarations:
+-------------------------------------------------------------------*/
+class QMouseEvent;
+
+/*------- class:
+-------------------------------------------------------------------*/
 class CategoryTree : public QTreeWidget {
     Q_OBJECT
+    enum { IdRole = Qt::UserRole+1, PidRole};
 public:
-    CategoryTree(QWidget* = nullptr);
+    explicit CategoryTree(QWidget* = nullptr);
     ~CategoryTree() override = default;
+
+private:
+    void mousePressEvent(QMouseEvent*) override;
+    static void category_dialog(int id = 0, int pid = 0, qstr const& name = {}) noexcept;
+
+private slots:
+    void add_new_main_category() noexcept;
+
+private:
+    QTreeWidgetItem* root_{};
+
 };
