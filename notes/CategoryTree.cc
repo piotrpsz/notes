@@ -28,6 +28,7 @@
 #include "CategoryTree.h"
 #include <QMenu>
 #include <QLabel>
+#include <QFrame>
 #include <QDialog>
 #include <QAction>
 #include <QLineEdit>
@@ -36,6 +37,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QTreeWidgetItem>
+#include <QDialogButtonBox>
 #include <memory>
 #include <fmt/core.h>
 
@@ -68,6 +70,12 @@ void CategoryTree::add_new_main_category() noexcept {
 }
 
 void CategoryTree::category_dialog(int const id, int const pid, qstr const& name) noexcept {
+    auto const parent_layout = new QHBoxLayout;
+    parent_layout->addWidget(new QLabel("Parent:"));
+    if (pid == 0)
+        parent_layout->addWidget(new QLabel("no parent (this is the main category)."));
+
+
     auto const editor = new QLineEdit;
     editor->setText(name);
 
@@ -75,10 +83,26 @@ void CategoryTree::category_dialog(int const id, int const pid, qstr const& name
     edit_layout->addWidget(new QLabel{"Category name:"});
     edit_layout->addWidget(editor);
 
-    auto const main_layout = new QVBoxLayout;
-    main_layout->addLayout(edit_layout);
+
+    auto const separator = new QFrame;
+    separator->setFrameShape(QFrame::HLine);
+    separator->setFrameShadow(QFrame::Sunken);
+
+
 
     auto const dialog = std::make_unique<QDialog>();
+
+    auto button_box = new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::Cancel);
+    connect(button_box, &QDialogButtonBox::accepted, dialog.get(), &QDialog::accept);
+    connect(button_box, &QDialogButtonBox::rejected, dialog.get(), &QDialog::reject);
+
+    auto const main_layout = new QVBoxLayout;
+    main_layout->addLayout(parent_layout);
+    main_layout->addWidget(separator);
+    main_layout->addLayout(edit_layout);
+    main_layout->addSpacing(10);
+    main_layout->addWidget(button_box);
+
     dialog->setWindowTitle("Add new main category");
     dialog->setLayout(main_layout);
     dialog->exec();
