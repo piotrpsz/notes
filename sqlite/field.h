@@ -5,15 +5,15 @@
 
 #include "value.h"
 #include <utility>
+#include <string>
 #include <fmt/core.h>
 
 class Field {
     std::pair<std::string,value_t> data_{};
 public:
     Field() = default;
-    explicit Field(const std::string& name) : data_{name, {}} {}
-    explicit Field(std::string name, value_t v) : data_{std::move(name), std::move(v)} {}
-    explicit Field(std::pair<std::string, value_t> data) : data_{std::move(data)} {}
+    explicit Field(std::string name, value_t v = {}) : data_{std::move(name), std::move(v)} {}
+    explicit Field(std::pair<std::string, value_t> pair) : data_{std::move(pair)} {}
     ~Field() = default;
 
     Field(Field const&) = default;
@@ -26,6 +26,12 @@ public:
     }
     auto& operator()() const& {
         return data_;
+    }
+    [[nodiscard]] std::string const& name() const noexcept {
+        return data_.first;
+    }
+    [[nodiscard]] value_t const& value() const noexcept {
+        return data_.second;
     }
 
     [[nodiscard]] std::string description() const noexcept {

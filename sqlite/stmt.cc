@@ -78,24 +78,24 @@ row_t fetch_row_data(sqlite3_stmt* const stmt, int const column_count) noexcept 
         std::string name{sqlite3_column_name(stmt, i)};
         switch (sqlite3_column_type(stmt, i)) {
             case SQLITE_NULL:
-                row.emplace_back(std::move(name), {});
+                row.add(std::move(name));
                 break;
             case SQLITE_INTEGER:
-                row.emplace_back(std::move(name), sqlite3_column_int64(stmt, i));
+                row.add(std::move(name), sqlite3_column_int64(stmt, i));
                 break;
             case SQLITE_FLOAT:
-                row.emplace_back(std::move(name), sqlite3_column_double(stmt, i));
+                row.add(std::move(name), sqlite3_column_double(stmt, i));
                 break;
             case SQLITE_TEXT: {
                 std::string text{reinterpret_cast<const char *>(sqlite3_column_text(stmt, i))};
-                row.emplace_back(std::move(name), std::move(text));
+                row.add(std::move(name), std::move(text));
                 break;
             }
             case SQLITE_BLOB: {
                 auto const ptr { reinterpret_cast<u8 const*>(sqlite3_column_blob(stmt, i))};
                 auto const size{ sqlite3_column_bytes(stmt, i)};
                 std::vector<u8> vec{ ptr, ptr + size };
-                row.emplace_back(std::move(name), std::move(vec));
+                row.add(std::move(name), std::move(vec));
             }
         }
     }

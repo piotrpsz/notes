@@ -49,6 +49,10 @@ public:
     [[nodiscard]] i64 int64() const noexcept {
         return std::get<Integer>(data_);
     }
+    [[nodiscard]] int isize() const noexcept {
+        return int(std::get<Integer>(data_));
+    }
+
     [[nodiscard]] f64 float64() const noexcept {
         return std::get<Double>(data_);
     }

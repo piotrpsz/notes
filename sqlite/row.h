@@ -4,16 +4,17 @@
 #pragma once
 
 #include "field.h"
+#include <unordered_map>
 
 
 class row_t {
-    std::vector<Field> data_{};
+    std::unordered_map<std::string, Field> data_{};
 public:
     row_t() = default;
 
     /// Init object with one, initial field.
-    row_t(std::string name, value_t value) {
-        data_.emplace_back(std::move(name), std::move(value));
+    row_t(std::string const& name, value_t value) {
+        data_[name] = Field{name, std::move(value)};
     }
 
     ~row_t() = default;
@@ -27,22 +28,29 @@ public:
         return data_.empty();
     }
 
+    std::optional<Field> operator[](std::string const& name) noexcept {
+        if (data_.contains(name))
+            return data_[name];
+        return {};
+    }
+
     [[nodiscard]] auto size() const noexcept {
         return data_.size();
     }
 
-    row_t& emplace_back(std::string name, value_t value) noexcept {
-        data_.emplace_back(std::move(name), std::move(value));
+    row_t& add(std::string name, value_t value) noexcept {
+        Field f{std::move(name), std::move(value)};
+        return add(f);
+    }
+    row_t& add(std::string name) noexcept {
+        Field f{std::move(name)};
+        return add(f);
+    }
+    row_t& add(Field const& f) noexcept {
+        data_[f.name()] = f;
         return *this;
     }
-    row_t& add(const std::string &name) {
-        data_.emplace_back(name);
-        return *this;
-    }
-    row_t& add(Field f) noexcept {
-        data_.push_back(std::move(f));
-        return *this;
-    }
+
     template<typename T>
     row_t& add(std::string name, std::optional<T> value) noexcept {
         return value
@@ -50,8 +58,8 @@ public:
                : add(name);
     }
 
-    using iterator = std::vector<Field>::iterator;
-    using const_iterator = std::vector<Field>::const_iterator;
+    using iterator = std::unordered_map<std::string,Field>::iterator;
+    using const_iterator = std::unordered_map<std::string,Field>::const_iterator;
     iterator begin() { return data_.begin(); }
     iterator end() { return data_.end(); }
     [[maybe_unused]] [[nodiscard]] const_iterator cbegin() const { return data_.cbegin(); }
@@ -68,10 +76,9 @@ public:
             names.reserve(n);
             values.reserve(n);
 
-            for (auto const& f : data_) {
-                auto const& [name, value] = f();
-                names.push_back(name);
-                values.push_back(value);
+            for (auto const& it : data_) {
+                names.push_back(it.second.name());
+                values.push_back(it.second.value());
             }
         }
 
@@ -80,12 +87,8 @@ public:
 
     [[nodiscard]] std::string description() const noexcept {
         std::vector<std::string> buffer{};
-        buffer.reserve(data_.size());
-
-        for (auto const& f : data_) {
-            buffer.push_back(f.description());
-        }
-
+        for (const auto & it : data_)
+            buffer.push_back(it.second.description());
         return shared::join(buffer);
     }
 };

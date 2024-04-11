@@ -47,10 +47,14 @@ public:
 
 private:
     void mousePressEvent(QMouseEvent*) override;
-    static std::optional<Category> category_dialog(Category&& category) noexcept;
-    void add_items_for(QTreeWidgetItem* item) noexcept;
+    static std::optional<Category> category_dialog(Category&& category, bool rename = false) noexcept;
+    static void add_items_for(QTreeWidgetItem* item) noexcept;
+    static Category category_from(QTreeWidgetItem const*) noexcept;
+
 private slots:
-    void add_new_main_category() noexcept;
+    void new_item() noexcept;
+    void remove_item() noexcept;
+    void edit_item() noexcept;
 
 private:
     QTreeWidgetItem* const root_;
