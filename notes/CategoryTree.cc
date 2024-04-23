@@ -50,10 +50,12 @@ std::string const CategoryTree::InsertQuery{"INSERT INTO category (pid, name) VA
 std::string const CategoryTree::UpdateQuery{"UPDATE category SET name=? WHERE id=?"};
 std::string const CategoryTree::DeleteQuery{"DELETE FROM category WHERE id=?"};
 std::string const CategoryTree::CountQuery{"SELECT COUNT(*) as count FROM category WHERE pid=? AND name=?"};
+std::string const CategoryTree::SubcategoriesCountQuery{"SELECT COUNT(*) as count FROM category WHERE pid=?"};
 
 /*------- forward declarations:
 -------------------------------------------------------------------*/
 std::optional<int> count(i64 pid, std::string const& name) noexcept;
+std::optional<bool> has_subcategories(i64 id) noexcept;
 bool acceptable(i64 pid, std::string const& name) noexcept;
 
 
@@ -107,7 +109,7 @@ void CategoryTree::mousePressEvent(QMouseEvent* const event) {
     QTreeWidget::mousePressEvent(event);
 }
 
-// Add new main category.
+/// Add new main category.
 void CategoryTree::new_main_category() noexcept {
     if (auto category_opt = category_dialog(Category{}); category_opt) {
         auto new_category = std::move(*category_opt);
@@ -147,14 +149,21 @@ void CategoryTree::new_subcategory() noexcept {
     }
 }
 
-// Rename current category/item.
+/// Delete current category/item.
 void CategoryTree::remove_category() noexcept {
     auto item = currentItem();
     if (item == nullptr) return;
 
-    auto category= category_from(item);
-    // TODO check if are notes for this category (and subcategories)
-    if (auto ok = SQLite::instance().exec(DeleteQuery, category.id); ok) {
+    auto [id, pid, _] = category_from(item);
+    if (auto ok = has_subcategories(id); ok and ok.value()) {
+        QMessageBox::warning(QApplication::activeWindow(),
+                             "The category cannot be deleted.",
+                             "This category cannot be deleted because it has subcategories!");
+        return;
+    }
+    // TODO check if category contains notes
+
+    if (auto ok = SQLite::instance().exec(DeleteQuery, id); ok) {
         item->parent()->removeChild(item);
         delete item;
     }
@@ -296,5 +305,13 @@ std::optional<int> count(i64 pid, std::string const& name) noexcept {
         if (auto result = *oresult; not result.empty())
             if (auto ocount = result[0]["count"]; ocount)
                 return ocount.value().value().int64();
+    return {};
+}
+
+std::optional<bool> has_subcategories(i64 const id) noexcept {
+    if (auto result = SQLite::instance().select(CategoryTree::SubcategoriesCountQuery, id); result and not result.value().empty())
+        if (auto count = result.value()[0]["count"]; count)
+            return count.value().value().int64() not_eq 0;
+
     return {};
 }

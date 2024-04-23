@@ -68,4 +68,5 @@ private:
     static std::string const UpdateQuery;
 public:
     static std::string const CountQuery;
+    static std::string const SubcategoriesCountQuery;
 };
