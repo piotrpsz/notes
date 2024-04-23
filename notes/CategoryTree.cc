@@ -47,7 +47,7 @@
 /*------- local constants:
 -------------------------------------------------------------------*/
 std::string const CategoryTree::InsertQuery{"INSERT INTO category (pid, name) VALUES (?,?)"};
-std::string const CategoryTree::UpdateQuery{};
+std::string const CategoryTree::UpdateQuery{"UPDATE category SET name=? WHERE id=?"};
 std::string const CategoryTree::DeleteQuery{"DELETE FROM category WHERE id=?"};
 std::string const CategoryTree::CountQuery{"SELECT COUNT(*) as count FROM category WHERE pid=? AND name=?"};
 
@@ -133,12 +133,16 @@ void CategoryTree::new_subcategory() noexcept {
 
     if (auto category_opt = category_dialog(std::move(category)); category_opt) {
         auto new_category = std::move(*category_opt);
-        auto [_, pid, name] = new_category;
-        auto const id  = SQLite::instance().insert(InsertQuery, pid, name.toStdString());
-        if (id not_eq SQLite::InvalidRowid) {
-            new_category.id = id;
-            auto const item = child_from_category(current_item, std::move(new_category));
-            setCurrentItem(item);
+        auto [_, pid, qname] = new_category;
+        auto name = qname.toStdString();
+
+        if (acceptable(pid, name)) {
+            auto const id = SQLite::instance().insert(InsertQuery, pid, name);
+            if (id not_eq SQLite::InvalidRowid) {
+                new_category.id = id;
+                auto const item = child_from_category(current_item, std::move(new_category));
+                setCurrentItem(item);
+            }
         }
     }
 }
@@ -156,11 +160,19 @@ void CategoryTree::remove_category() noexcept {
     }
 }
 
-void CategoryTree::edit_item() noexcept {
-    auto item = currentItem();
-    if (item == nullptr) return;
-    auto category= category_from(item);
+void CategoryTree::
+edit_item() noexcept {
+    if (auto item = currentItem(); item)
+        if (auto category = category_dialog(category_from(item), true)) {
+            auto [id, pid, qname] = category.value();
+            auto name = qname.toStdString();
 
+            if (acceptable(pid, name))
+                if (SQLite::instance().update(UpdateQuery, name, id)) {
+                    item->setText(0, qname);
+                    item->parent()->sortChildren(0, Qt::AscendingOrder);
+                }
+        }
 }
 
 QTreeWidgetItem* CategoryTree::
@@ -169,6 +181,8 @@ child_from_category(QTreeWidgetItem* const parent, Category&& category) noexcept
     item->setText(0, category.name);
     item->setData(0, IdRole, qint64(category.id));
     item->setData(0, PidRole, qint64(category.pid));
+    // Since we added a new subcategory-item, we need to sort them again
+    parent->sortChildren(0, Qt::AscendingOrder);
     return item;
 }
 
@@ -188,11 +202,6 @@ category_from(QTreeWidgetItem const* const item) noexcept {
 // Run the dialog for category edition.
 std::optional<CategoryTree::Category> CategoryTree::
 category_dialog(Category&& category, bool const rename) noexcept {
-    fmt::print("CategoryTree::category_dialog: {}, {}, {}\n",
-               category.id,
-               category.pid,
-               category.name.toStdString());
-
     auto const parent_layout = new QHBoxLayout;
     if (category.id == 0)
         parent_layout->addWidget(new QLabel("No parents, this will be the new main category."));
@@ -203,8 +212,10 @@ category_dialog(Category&& category, bool const rename) noexcept {
     }
 
     auto const editor = new QLineEdit;
-    if (rename)
+    if (rename) {
         editor->setText(category.name);
+        editor->selectAll();
+    }
 
     auto const edit_layout = new QHBoxLayout;
     edit_layout->addWidget(new QLabel{"Category name:"});
@@ -234,7 +245,12 @@ category_dialog(Category&& category, bool const rename) noexcept {
 
     if (dialog->exec() and not editor->text().isEmpty()) {
         Category result{.name = editor->text()};
-        result.pid = category.id;
+        if (rename) {
+            result.id = category.id;
+            result.pid = category.pid;
+        }
+        else
+            result.pid = category.id;
         return result;
     }
     return {};
