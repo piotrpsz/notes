@@ -52,6 +52,9 @@ std::string const CategoryTree::DeleteQuery{"DELETE FROM category WHERE id=?"};
 std::string const CategoryTree::CountQuery{"SELECT COUNT(*) as count FROM category WHERE pid=? AND name=?"};
 std::string const CategoryTree::SubcategoriesCountQuery{"SELECT COUNT(*) as count FROM category WHERE pid=?"};
 
+static char const* const RemoveTitle = "The category cannot be deleted.";
+static char const* const RemoveMessage = "This category cannot be deleted because it has subcategories!";
+
 /*------- forward declarations:
 -------------------------------------------------------------------*/
 std::optional<int> count(i64 pid, std::string const& name) noexcept;
@@ -156,9 +159,7 @@ void CategoryTree::remove_category() noexcept {
 
     auto [id, pid, _] = category_from(item);
     if (auto ok = has_subcategories(id); ok and ok.value()) {
-        QMessageBox::warning(QApplication::activeWindow(),
-                             "The category cannot be deleted.",
-                             "This category cannot be deleted because it has subcategories!");
+        QMessageBox::warning(QApplication::activeWindow(), RemoveTitle, RemoveMessage);
         return;
     }
     // TODO check if category contains notes
