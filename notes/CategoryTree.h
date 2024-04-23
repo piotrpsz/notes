@@ -48,9 +48,9 @@ public:
 
 private:
     void mousePressEvent(QMouseEvent*) override;
+
     static std::optional<Category> category_dialog(Category&& category, bool rename = false) noexcept;
     static void add_items_for(QTreeWidgetItem* item) noexcept;
-
     static Category category_from(QTreeWidgetItem const*) noexcept;
     static QTreeWidgetItem* child_from_category(QTreeWidgetItem*, Category&&) noexcept;
 
