@@ -14,8 +14,12 @@ public:
             name TEXT NOT NULL COLLATE NOCASE
         );
     )";
-    static inline std::string const CreateIndex = R"(
-        CREATE INDEX category_pid_index ON category(pid, id);
+    static inline std::string const CreateIndexId = R"(
+        CREATE UNIQUE INDEX category_pid_index ON category(pid, id);
     )";
+    static inline std::string const CreateIndexName = R"(
+        CREATE UNIQUE INDEX category_pid_name ON category(pid, name);
+    )";
+
 };
 

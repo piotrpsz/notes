@@ -28,6 +28,9 @@ public:
     void push_back(row_t row) noexcept {
         data_.push_back(std::move(row));
     }
+    row_t operator[](int i) const noexcept {
+        return data_[i];
+    }
 
     using iterator = std::vector<row_t>::iterator;
     using const_iterator = std::vector<row_t>::const_iterator;

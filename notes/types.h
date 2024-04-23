@@ -32,9 +32,11 @@
 #include <QSet>
 #include <vector>
 #include <string>
+#include <qglobal.h>
 
 /*------- types:
 -------------------------------------------------------------------*/
+using qi64 = qint64;
 using isize = qsizetype;
 using qstr = QString;
 using qvar = QVariant;

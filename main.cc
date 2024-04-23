@@ -46,7 +46,8 @@ bool open_or_create_database() noexcept {
     return SQLite::instance().create(DatabasePath, [](SQLite const& db){
         // Create tables.
         return db.exec(Category::CreateTable) and
-                db.exec(Category::CreateIndex) and
+                db.exec(Category::CreateIndexId) and
+                db.exec(Category::CreateIndexName) and
                 db.exec(Note::Create);
     });
 }

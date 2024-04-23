@@ -26,6 +26,7 @@
 
 /*------- include files:
 -------------------------------------------------------------------*/
+#include "../shared.h"
 #include "types.h"
 #include <QTreeWidget>
 #include <optional>
@@ -40,7 +41,7 @@ class CategoryTree : public QTreeWidget {
     Q_OBJECT
     enum { IdRole = Qt::UserRole+1, PidRole};
 public:
-    struct Category { int id{}, pid{}; qstr name{}; };
+    struct Category { i64 id{}; i64 pid{}; qstr name{}; };
 public:
     explicit CategoryTree(QWidget* = nullptr);
     ~CategoryTree() override = default;
@@ -49,14 +50,22 @@ private:
     void mousePressEvent(QMouseEvent*) override;
     static std::optional<Category> category_dialog(Category&& category, bool rename = false) noexcept;
     static void add_items_for(QTreeWidgetItem* item) noexcept;
+
     static Category category_from(QTreeWidgetItem const*) noexcept;
+    static QTreeWidgetItem* child_from_category(QTreeWidgetItem*, Category&&) noexcept;
 
 private slots:
-    void new_item() noexcept;
-    void remove_item() noexcept;
+    void new_subcategory() noexcept;
+    void new_main_category() noexcept;
+    void remove_category() noexcept;
     void edit_item() noexcept;
 
 private:
     QTreeWidgetItem* const root_;
 
+    static std::string const InsertQuery;
+    static std::string const DeleteQuery;
+    static std::string const UpdateQuery;
+public:
+    static std::string const CountQuery;
 };

@@ -17,9 +17,9 @@ class SQLite {
             0x53, 0x51, 0x4c, 0x69, 0x74, 0x65, 0x20, 0x66,
             0x6f, 0x72, 0x6d, 0x61, 0x74, 0x20, 0x33, 0x00
     };
-
     sqlite3 *db_ = nullptr;
 public:
+    static i64 const InvalidRowid = -1;
     static inline std::string InMemory{":memory:"};
 
     // singleton
@@ -53,10 +53,13 @@ public:
     }
     //------- INSERT --------------------------------------
     [[nodiscard]] i64 insert(query_t const& query) const noexcept {
-        return Stmt(db_).exec_without_result(query) ? sqlite3_last_insert_rowid(db_) : -1;
+        Stmt stmt(db_);
+        if (stmt.exec_without_result(query))
+            return sqlite3_last_insert_rowid(db_);
+        return InvalidRowid;
     }
     template<typename... T>
-    [[nodiscard]] bool insert(std::string const& str, T... args) const noexcept {
+    [[nodiscard]] i64 insert(std::string const& str, T... args) const noexcept {
         return insert(query_t{str, args...});
     }
     //------- UPDATE --------------------------------------
