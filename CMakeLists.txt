@@ -45,7 +45,6 @@ add_executable(notes main.cc
         notes/NoteWidget.cc
         notes/NoteWidget.h
         common/Event.h
-        common/EventController.cc
         common/EventController.h)
 target_link_libraries(notes
         Qt::Core Qt::Gui Qt::Widgets

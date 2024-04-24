@@ -34,6 +34,7 @@
 /*------- forward declarations:
 -------------------------------------------------------------------*/
 class QMouseEvent;
+class QTreeWidgetItem;
 
 /*------- class:
 -------------------------------------------------------------------*/
@@ -59,6 +60,7 @@ private slots:
     void new_main_category() noexcept;
     void remove_category() noexcept;
     void edit_item() noexcept;
+    static void item_double_clicked(QTreeWidgetItem*, int) noexcept;
 
 private:
     QTreeWidgetItem* const root_;

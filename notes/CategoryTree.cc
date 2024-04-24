@@ -26,6 +26,7 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include "../sqlite/sqlite.h"
+#include "../common/EventController.h"
 #include "CategoryTree.h"
 #include <QMenu>
 #include <QLabel>
@@ -81,6 +82,8 @@ CategoryTree::CategoryTree(QWidget* const parent) :
 
     add_items_for(root_);
     root_->setExpanded(true);
+
+    connect(this, &QTreeWidget::itemDoubleClicked, this, &CategoryTree::item_double_clicked);
 }
 
 // Handle mouse clicks.
@@ -110,6 +113,15 @@ void CategoryTree::mousePressEvent(QMouseEvent* const event) {
         event->accept();
     }
     QTreeWidget::mousePressEvent(event);
+}
+
+void CategoryTree::item_double_clicked(QTreeWidgetItem* const item, int) noexcept {
+    bool ok_id{}, ok_pid{};
+    int const id = item->data(0, IdRole).toInt(&ok_id);
+    int const pid = item->data(0, PidRole).toInt(&ok_pid);
+
+    if (ok_id and ok_pid)
+        EventController::instance().send(event::CategorySelected, id, pid);
 }
 
 /// Add new main category.

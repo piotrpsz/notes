@@ -54,8 +54,7 @@ public:
 -------------------------------------------------------------------*/
 namespace event {
     enum {
-        Dummy = (QEvent::User + 1),
-        CategorySelected,
+        CategorySelected = (QEvent::User + 1),
         CategoryRemoved,
         NoteSelected,
         NoteRemoved,
