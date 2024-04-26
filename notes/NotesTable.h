@@ -33,6 +33,6 @@
 class NotesTable : public QTableWidget {
     Q_OBJECT
 public:
-    NotesTable(QWidget* = nullptr);
+    explicit NotesTable(QWidget* = nullptr);
     ~NotesTable() override = default;
 };

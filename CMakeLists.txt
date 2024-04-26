@@ -10,6 +10,15 @@ find_package(SQLite3 REQUIRED)
 find_package(fmt REQUIRED)
 find_package(range-v3 REQUIRED)
 
+#======== date Howard Hinnant
+find_package(date REQUIRED)
+#include(FetchContent)
+#FetchContent_Declare(date_src
+#        GIT_REPOSITORY https://github.com/HowardHinnant/date.git
+#        GIT_TAG master
+#)
+#FetchContent_MakeAvailable(date_src)
+
 find_package(Qt6 COMPONENTS
         Core
         Gui
@@ -45,11 +54,15 @@ add_executable(notes main.cc
         notes/NoteWidget.cc
         notes/NoteWidget.h
         common/Event.h
-        common/EventController.h)
+        common/EventController.h
+        common/Datime.h
+)
 target_link_libraries(notes
         Qt::Core Qt::Gui Qt::Widgets
         sqlite3
         fmt::fmt
         range-v3::meta range-v3::concepts range-v3::range-v3
+        date::date
+        date::date-tz
+        curl
 )
-

@@ -26,9 +26,18 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include "NotesTable.h"
+#include <QTableWidgetItem>
 
 NotesTable::NotesTable(QWidget* const parent) :
         QTableWidget(parent)
 {
+    setRowCount(10);
+    {
+        setColumnCount(4);
+        auto title_head = new QTableWidgetItem("Name");
+        setHorizontalHeaderItem(0, title_head);
 
+        setHorizontalHeaderItem(2, new QTableWidgetItem("Last edited"));
+        setHorizontalHeaderItem(3, new QTableWidgetItem("Created"));
+    }
 }
