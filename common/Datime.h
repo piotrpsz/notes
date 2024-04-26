@@ -34,21 +34,21 @@
 using i64 = int64_t;
 using zoned_time_t = date::zoned_time<std::chrono::seconds>;
 
-struct dt_t {
+struct Date {
     int y{}, m{}, d{};
-    bool operator==(dt_t const& rhs) const noexcept {
+    bool operator==(Date const& rhs) const noexcept {
         return y == rhs.y && m == rhs.m && d == rhs.d;
     }
-    bool operator!=(dt_t const& rhs) const noexcept {
+    bool operator!=(Date const& rhs) const noexcept {
         return !operator==(rhs);
     }
-    bool operator<(dt_t const& rhs) const noexcept {
+    bool operator<(Date const& rhs) const noexcept {
         if (y < rhs.y) return true;
         if (m < rhs.m) return true;
         if (d < rhs.d) return true;
         return false;
     }
-    bool operator>(dt_t const& rhs) const noexcept {
+    bool operator>(Date const& rhs) const noexcept {
         if (y > rhs.y) return true;
         if (m > rhs.m) return true;
         if (d > rhs.d) return true;
@@ -56,7 +56,7 @@ struct dt_t {
     }
 
 };
-struct tm_t {
+struct Time {
     int h{}, m{}, s{};
 };
 
@@ -88,7 +88,7 @@ public:
     }
 
     /// Data-czas z komponentów.
-    explicit Datime(dt_t const dt, tm_t const tm)
+    explicit Datime(Date const dt, Time const tm)
             : tp_{from_components(dt, tm)}
     {}
 
@@ -136,7 +136,7 @@ public:
     }
 
     /// Zmiana czasu na podany.
-    Datime& set_time(tm_t const tm) noexcept {
+    Datime& set_time(Time const tm) noexcept {
         namespace chrono = std::chrono;
         auto t = date::floor<chrono::days>(tp_.get_local_time())
                  + chrono::hours(tm.h)
@@ -176,7 +176,7 @@ public:
         return set_time({23,59,59});
     }
     /// Wyznaczenie składników daty (bez czasu).
-    [[nodiscard]] dt_t
+    [[nodiscard]] Date
     date_components() const noexcept {
         namespace chrono = std::chrono;
         auto days = date::floor<chrono::days>(tp_.get_local_time());
@@ -192,7 +192,7 @@ public:
         return date_components() == rhs.date_components();
     }
     /// Wyznaczenie składników czasu (bez daty).
-    [[nodiscard]] tm_t
+    [[nodiscard]] Time
     time_components() const noexcept {
         namespace chrono = std::chrono;
         auto const days = date::floor<chrono::days>(tp_.get_local_time());
@@ -203,7 +203,7 @@ public:
         return {hour, min, sec};
     }
     /// Wyznaczenie składników daty i czasu.
-    [[nodiscard]] std::tuple<dt_t, tm_t>
+    [[nodiscard]] std::tuple<Date, Time>
     components() const noexcept {
         namespace chrono = std::chrono;
         auto const days = date::floor<chrono::days>(tp_.get_local_time());
@@ -212,13 +212,13 @@ public:
         auto const year = static_cast<int>(ymd.year());
         auto const month = static_cast<int>(static_cast<unsigned>(ymd.month()));
         auto const day = static_cast<int>(static_cast<unsigned>(ymd.day()));
-        dt_t const dt{year, month, day};
+        Date const dt{year, month, day};
 
         date::hh_mm_ss const hms{tp_.get_local_time() - days};
         auto hour = static_cast<int>(hms.hours().count());
         auto min = static_cast<int>(hms.minutes().count());
         auto sec = static_cast<int>(hms.seconds().count());
-        tm_t const tm{hour, min, sec};
+        Time const tm{hour, min, sec};
 
         return {dt, tm};
     }
@@ -269,7 +269,7 @@ public:
     }
 private:
     [[nodiscard]] zoned_time_t
-    from_components(dt_t const dt, tm_t const tm) noexcept {
+    from_components(Date const dt, Time const tm) noexcept {
         namespace chrono = std::chrono;
         date::year_month_day const ymd = date::year(dt.y) / dt.m / dt.d;
         auto const days = static_cast<date::local_days>(ymd);

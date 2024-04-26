@@ -56,9 +56,9 @@ bool open_or_create_database() noexcept {
 
 
 int main(int argc, char *argv[]) {
-    Datime dt{"2024-04-26 21:55:38"};
-    fmt::print("{}\n", dt.str());
-    return 0;
+//    Datime dt{"2024-04-26 21:55:38"};
+//    fmt::print("{}\n", dt.str());
+//    return 0;
 
 
     if (not open_or_create_database()) {
