@@ -20,36 +20,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.#pragma once
 //
-// Created by piotr on 09.04.24.
+// Created by piotr on 27.04.24.
 //
 #pragma once
 
 /*------- include files:
 -------------------------------------------------------------------*/
-#include "types.h"
-#include <QSplitter>
+#include <QWidget>
 
-/*------- forward declarations:
--------------------------------------------------------------------*/
-class QShowEvent;
-class QCloseEvent;
-class QEvent;
-
-/*------- class:
--------------------------------------------------------------------*/
-class NotesWorkspace : public QSplitter {
+class NotesTableWidget : public QWidget {
     Q_OBJECT
 public:
-    explicit NotesWorkspace(QWidget* = nullptr);
-    ~NotesWorkspace() override;
+    NotesTableWidget(QWidget* = nullptr);
+    ~NotesTableWidget() override = default;
 
-private:
-    void showEvent(QShowEvent*) override;
-    void customEvent(QEvent*) override;
-    static void new_note() noexcept;
-
-    bool first_show_{true};
-    static inline qstr const SizesH0Key = "NotesWorkspace/Sizes/H0";
-    static inline qstr const SizesH1Key = "NotesWorkspace/Sizes/H1";
 };
-

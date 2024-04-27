@@ -34,6 +34,8 @@ NotesTable::NotesTable(QWidget* const parent) :
 {
     setRowCount(10);
     setColumnCount(2);
+    setEditTriggers(NoEditTriggers);
+    setSelectionBehavior(SelectRows);
 
     setHorizontalHeaderItem(0, new QTableWidgetItem("Title"));
     setHorizontalHeaderItem(1, new QTableWidgetItem("Description"));

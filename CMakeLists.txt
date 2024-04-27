@@ -59,6 +59,12 @@ add_executable(notes main.cc
         common/Event.h
         common/EventController.h
         common/Datime.h
+        notes/NotesTableWidget.cc
+        notes/NotesTableWidget.h
+        notes/NotesTableToolbar.cc
+        notes/NotesTableToolbar.h
+        notes/EditDialog.cc
+        notes/EditDialog.h
 )
 target_link_libraries(notes
         Qt::Core Qt::Gui Qt::Widgets

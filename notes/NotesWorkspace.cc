@@ -26,17 +26,25 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include "NotesWorkspace.h"
-#include "NotesTable.h"
+#include "NotesTableWidget.h"
 #include "NoteWidget.h"
 #include "Settings.h"
+#include "../common/EventController.h"
+#include "EditDialog.h"
 #include <QVariant>
 #include <QShowEvent>
+#include <memory>
 #include <fmt/core.h>
 
 NotesWorkspace::NotesWorkspace(QWidget *const parent) : QSplitter(Qt::Vertical, parent) {
     setHandleWidth(1);
-    addWidget(new NotesTable);
+    addWidget(new NotesTableWidget);
     addWidget(new NoteWidget);
+
+    EventController::instance().append(this,
+                                       event::NewNoteRequest,
+                                       event::EditNoteRequest,
+                                       event::RemoveNoteRequest);
 }
 
 NotesWorkspace::~NotesWorkspace() {
@@ -62,4 +70,23 @@ void NotesWorkspace::showEvent(QShowEvent *const event) {
         h1 = data.value().toInt();
 
     setSizes({h0, h1});
+}
+
+void NotesWorkspace::customEvent(QEvent* const event) {
+    event->accept();
+    auto const e = dynamic_cast<Event*>(event);
+
+    switch (static_cast<int>(e->type())) {
+        case event::NewNoteRequest: {
+            new_note();
+            break;
+        }
+
+    }
+}
+
+void NotesWorkspace::new_note() noexcept {
+    auto dialog = std::make_unique<EditDialog>();
+
+    dialog->exec();
 }
