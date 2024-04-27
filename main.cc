@@ -33,8 +33,16 @@
 #include <fmt/core.h>
 #include <string>
 
-#include "common/Datime.h"
-#include <fmt/core.h>
+
+bool create_cmds(SQLite const& db, std::vector<std::string> const& commands) noexcept {
+    for (auto const& cmd : commands) {
+        fmt::print("{}\n", cmd);
+        auto const ok = db.exec(cmd);
+        if (not ok) return {};
+    }
+    return true;
+}
+
 
 bool open_or_create_database() noexcept {
     using namespace std::string_literals;
@@ -47,20 +55,12 @@ bool open_or_create_database() noexcept {
     // Can't open so create one.
     return SQLite::instance().create(DatabasePath, [](SQLite const& db){
         // Create tables.
-        return db.exec(Category::CreateTable) and
-                db.exec(Category::CreateIndexId) and
-                db.exec(Category::CreateIndexName) and
-                db.exec(Note::Create);
-    });
+        return create_cmds(db, Category::CreationCmd) and create_cmds(db, Note::CreationCmd);
+    }, false);
 }
 
 
 int main(int argc, char *argv[]) {
-//    Datime dt{"2024-04-26 21:55:38"};
-//    fmt::print("{}\n", dt.str());
-//    return 0;
-
-
     if (not open_or_create_database()) {
         fmt::print(stderr, "Database creation error\n");
         return 1;

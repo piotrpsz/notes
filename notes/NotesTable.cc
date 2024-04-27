@@ -27,17 +27,15 @@
 -------------------------------------------------------------------*/
 #include "NotesTable.h"
 #include <QTableWidgetItem>
+#include <QHeaderView>
 
 NotesTable::NotesTable(QWidget* const parent) :
         QTableWidget(parent)
 {
     setRowCount(10);
-    {
-        setColumnCount(4);
-        auto title_head = new QTableWidgetItem("Name");
-        setHorizontalHeaderItem(0, title_head);
+    setColumnCount(2);
 
-        setHorizontalHeaderItem(2, new QTableWidgetItem("Last edited"));
-        setHorizontalHeaderItem(3, new QTableWidgetItem("Created"));
-    }
+    setHorizontalHeaderItem(0, new QTableWidgetItem("Title"));
+    setHorizontalHeaderItem(1, new QTableWidgetItem("Description"));
+    horizontalHeader()->setStretchLastSection(true);
 }

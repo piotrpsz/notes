@@ -12,12 +12,15 @@ find_package(range-v3 REQUIRED)
 
 #======== date Howard Hinnant
 find_package(date REQUIRED)
-#include(FetchContent)
-#FetchContent_Declare(date_src
-#        GIT_REPOSITORY https://github.com/HowardHinnant/date.git
-#        GIT_TAG master
-#)
-#FetchContent_MakeAvailable(date_src)
+
+include(FetchContent)
+FetchContent_Declare(
+        glaze
+        GIT_REPOSITORY https://github.com/stephenberry/glaze.git
+        GIT_TAG main
+        GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(glaze)
 
 find_package(Qt6 COMPONENTS
         Core
@@ -64,5 +67,6 @@ target_link_libraries(notes
         range-v3::meta range-v3::concepts range-v3::range-v3
         date::date
         date::date-tz
+        glaze::glaze
         curl
 )
