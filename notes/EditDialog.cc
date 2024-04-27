@@ -15,12 +15,17 @@
 //
 
 #include "EditDialog.h"
+#include <QIcon>
 #include <QFrame>
 #include <QLabel>
+#include <QAction>
+#include <QToolBar>
 #include <QLineEdit>
 #include <QTextEdit>
 #include <QPushButton>
 #include <QGridLayout>
+#include <QFontDialog>
+#include <QColorDialog>
 #include <QDialogButtonBox>
 #include <fmt/core.h>
 
@@ -32,6 +37,7 @@ EditDialog::EditDialog(QWidget* const parent) :
 {
     setWindowTitle("Note");
     setSizeGripEnabled(true);
+    content_->setAcceptRichText(true);
 
     auto const separator{new QFrame};
     separator->setFrameShape(QFrame::HLine);
@@ -53,9 +59,36 @@ EditDialog::EditDialog(QWidget* const parent) :
     layout->addWidget(new QLabel("Description"), 1, 0);
     layout->addWidget(description_, 1, 1);
     layout->addWidget(separator, 2, 0, 1, 2);
-    layout->addWidget(content_, 3, 0, 1, 2);
+    layout->addLayout(editor(), 3, 0, 1, 2);
     layout->addWidget(buttons, 4, 0, 1, 2);
 
     setLayout(layout);
+}
 
+QVBoxLayout* EditDialog::editor() noexcept {
+    auto spacer = new QWidget;
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+
+    auto const toolbar{new QToolBar};
+    auto const font = new QAction(QIcon::fromTheme("preferences-desktop-font"), "Font");
+    connect(font, &QAction::triggered, [this]() {
+        bool ok;
+        auto const font = QFontDialog::getFont(&ok, QFont("Times", 12), this);
+        if (ok) {
+            content_->setCurrentFont(font);
+        }
+    });
+    auto const color = new QAction(QIcon::fromTheme("color"), "Color");
+    connect(color, &QAction::triggered, [this]() {
+        auto color = QColorDialog::getColor();
+        content_->setTextColor(color);
+    });
+    toolbar->addWidget(spacer);
+    toolbar->addAction(font);
+    toolbar->addAction(color);
+
+    auto const layout{new QVBoxLayout};
+    layout->addWidget(toolbar);
+    layout->addWidget(content_);
+    return layout;
 }

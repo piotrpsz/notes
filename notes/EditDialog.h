@@ -23,12 +23,15 @@
 -------------------------------------------------------------------*/
 class QLineEdit;
 class QTextEdit;
+class QVBoxLayout;
 
 class EditDialog : public QDialog {
     Q_OBJECT
 public:
     explicit EditDialog(QWidget* = nullptr);
     ~EditDialog() override = default;
+
+    QVBoxLayout* editor() noexcept;
 
 private:
     QLineEdit* const title_;
