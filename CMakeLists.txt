@@ -65,6 +65,8 @@ add_executable(notes main.cc
         notes/NotesTableToolbar.h
         notes/EditDialog.cc
         notes/EditDialog.h
+        notes/Editor.cc
+        notes/Editor.h
 )
 target_link_libraries(notes
         Qt::Core Qt::Gui Qt::Widgets

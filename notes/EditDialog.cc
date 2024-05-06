@@ -1,3 +1,12 @@
+// MIT License
+//
+// Copyright (c) 2024 Piotr Pszczółkowski
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
 // The above copyright notice and this permission notice shall be included in all
@@ -15,17 +24,17 @@
 //
 
 #include "EditDialog.h"
+#include "Editor.h"
+#include "../common/EventController.h"
 #include <QIcon>
 #include <QFrame>
 #include <QLabel>
 #include <QAction>
 #include <QToolBar>
 #include <QLineEdit>
-#include <QTextEdit>
 #include <QPushButton>
 #include <QGridLayout>
-#include <QFontDialog>
-#include <QColorDialog>
+#include <QApplication>
 #include <QDialogButtonBox>
 #include <fmt/core.h>
 
@@ -33,11 +42,11 @@ EditDialog::EditDialog(QWidget* const parent) :
     QDialog(parent),
     title_{new QLineEdit},
     description_{new QLineEdit},
-    content_{new QTextEdit}
+    editor_{new Editor}
 {
     setWindowTitle("Note");
     setSizeGripEnabled(true);
-    content_->setAcceptRichText(true);
+
 
     auto const separator{new QFrame};
     separator->setFrameShape(QFrame::HLine);
@@ -59,36 +68,61 @@ EditDialog::EditDialog(QWidget* const parent) :
     layout->addWidget(new QLabel("Description"), 1, 0);
     layout->addWidget(description_, 1, 1);
     layout->addWidget(separator, 2, 0, 1, 2);
-    layout->addLayout(editor(), 3, 0, 1, 2);
+    layout->addLayout(editor_layout(), 3, 0, 1, 2);
     layout->addWidget(buttons, 4, 0, 1, 2);
 
     setLayout(layout);
 }
 
-QVBoxLayout* EditDialog::editor() noexcept {
+void EditDialog::showEvent(QShowEvent* e) {
+    auto const parent = QApplication::activeWindow();
+    auto const size = parent->size();
+    resize(int(size.width() * .7), int(size.height() * .7));
+    QDialog::showEvent(e);
+}
+
+QVBoxLayout* EditDialog::editor_layout() noexcept {
+    // https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
+
+    // Ikony po będą po prawej stronie. Aby tak się stało dodamy
+    // z lewej strony spacer który zepchnie je do prawej strony.
     auto spacer = new QWidget;
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
     auto const toolbar{new QToolBar};
-    auto const font = new QAction(QIcon::fromTheme("preferences-desktop-font"), "Font");
-    connect(font, &QAction::triggered, [this]() {
-        bool ok;
-        auto const font = QFontDialog::getFont(&ok, QFont("Times", 12), this);
-        if (ok) {
-            content_->setCurrentFont(font);
-        }
+    toolbar->setIconSize(QSize(16, 16));
+
+
+    auto const copy_action = new QAction(QIcon::fromTheme("edit-copy"), "Copy");
+    connect(copy_action, &QAction::triggered, [this]() {
+        EventController::instance().send(event::CopyRequest);
     });
-    auto const color = new QAction(QIcon::fromTheme("color"), "Color");
-    connect(color, &QAction::triggered, [this]() {
-        auto color = QColorDialog::getColor();
-        content_->setTextColor(color);
+    auto const cut_action = new QAction(QIcon::fromTheme("edit-cut"), "Cut");
+    connect(cut_action, &QAction::triggered, [this]() {
+        EventController::instance().send(event::CutRequest);
     });
+    auto const paste_action = new QAction(QIcon::fromTheme("edit-paste"), "Paste");
+    connect(paste_action, &QAction::triggered, [this]() {
+        EventController::instance().send(event::PasteRequest);
+    });
+    auto const font_action = new QAction(QIcon::fromTheme("preferences-desktop-font"), "Font");
+    connect(font_action, &QAction::triggered, [this]() {
+        EventController::instance().send(event::SelectFontRequest);
+    });
+    auto const color_action = new QAction(QIcon::fromTheme("color"), "Color");
+    connect(color_action, &QAction::triggered, [this]() {
+        EventController::instance().send(event::SelectColorRequest);
+    });
+
     toolbar->addWidget(spacer);
-    toolbar->addAction(font);
-    toolbar->addAction(color);
+    toolbar->addAction(copy_action);
+    toolbar->addAction(cut_action);
+    toolbar->addAction(paste_action);
+    toolbar->addAction(font_action);
+    toolbar->addAction(color_action);
 
     auto const layout{new QVBoxLayout};
     layout->addWidget(toolbar);
-    layout->addWidget(content_);
+    layout->addWidget(editor_);
     return layout;
 }

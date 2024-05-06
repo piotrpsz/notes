@@ -20,32 +20,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.#pragma once
 //
-// Created by piotr on 27.04.24.
+// Created by piotr on 30.04.24.
 //
 #pragma once
 
+// https://doc.qt.io/qt-6.2/qtwidgets-mainwindows-application-example.html
+
 /*------- include files:
 -------------------------------------------------------------------*/
-#include <QDialog>
+#include <QTextEdit>
 
 /*------- forward declarations:
 -------------------------------------------------------------------*/
-class Editor;
-class QLineEdit;
-class QVBoxLayout;
+class QEvent;
+class QKeyEvent;
 
-class EditDialog : public QDialog {
+class Editor : public QTextEdit {
     Q_OBJECT
 public:
-    explicit EditDialog(QWidget* = nullptr);
-    ~EditDialog() override = default;
-
-    QVBoxLayout* editor_layout() noexcept;
-
+    explicit Editor(QWidget* = nullptr);
+    ~Editor() override = default;
 private:
-    void showEvent(QShowEvent*) override;
-
-    QLineEdit* const title_;
-    QLineEdit* const description_;
-    Editor* const editor_;
+    void customEvent(QEvent*) override;
+    void keyPressEvent(QKeyEvent*) override;
+    void select_color() noexcept;
+    void select_font() noexcept;
 };

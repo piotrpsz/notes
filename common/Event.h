@@ -60,6 +60,12 @@ namespace event {
         EditNoteRequest,
         RemoveNoteRequest,
 
+        SelectFontRequest,
+        SelectColorRequest,
+        CopyRequest,
+        CutRequest,
+        PasteRequest,
+
         NoteAdded,
         NoteSelected,
         NoteRemoved,
