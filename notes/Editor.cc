@@ -96,8 +96,21 @@ void Editor::keyPressEvent(QKeyEvent* const event) {
                 event->accept();
             }
             break;
-    }
+        case Qt::Key_I:
+            if (flag.testFlag(Qt::ControlModifier)) {
+                setFontItalic(not fontItalic());
+                event->accept();
+            }
+            break;
+        case Qt::Key_B:
+            if (flag.testFlag(Qt::ControlModifier)) {
+                auto const is_bold = fontWeight() == QFont::Bold;
+                setFontWeight(is_bold ? QFont::Normal : QFont::Bold);
+                event->accept();
+            }
+            break;
 
+    }
     QTextEdit::keyPressEvent(event);
 }
 
