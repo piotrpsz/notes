@@ -26,8 +26,11 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include "NotesTable.h"
+#include "../model/category.hh"
+#include "../common/EventController.h"
 #include <QTableWidgetItem>
 #include <QHeaderView>
+#include <fmt/core.h>
 
 NotesTable::NotesTable(QWidget* const parent) :
         QTableWidget(parent)
@@ -40,4 +43,36 @@ NotesTable::NotesTable(QWidget* const parent) :
     setHorizontalHeaderItem(0, new QTableWidgetItem("Title"));
     setHorizontalHeaderItem(1, new QTableWidgetItem("Description"));
     horizontalHeader()->setStretchLastSection(true);
+
+    EventController::instance().append(this, event::CategorySelected);
+}
+
+void NotesTable::customEvent(QEvent* const event) {
+    auto const e = dynamic_cast<Event *>(event);
+    switch (int(e->type())) {
+        case event::CategorySelected:
+            if (auto data = e->data(); not data.empty()) {
+                if (auto value = data[0]; value.canConvert<int>()) {
+                    update_content_for(value.toInt());
+                }
+            }
+            break;
+    }
+}
+
+void NotesTable::update_content_for(i64 const id) noexcept {
+    auto ids = Category::ids_subchain_for(id);
+
+//    if (ids.empty()) {
+//        setRowCount(0);
+//        setColumnCount(2);
+//        setEditTriggers(NoEditTriggers);
+//        setSelectionBehavior(SelectRows);
+//        update();
+//    }
+
+
+    for (auto const& id : ids)
+        fmt::print("{}\n", id);
+    fmt::print("--------------------------------\n");
 }

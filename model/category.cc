@@ -9,10 +9,6 @@ Category::Category(Row row) {
         id_  = field.value().value().int64();
     if (auto field = row["pid"]; field)
         pid_  = field.value().value().int64();
-    if (auto field = row["created"]; field)
-        created_  = DateTime(field.value().value().str());
-    if (auto field = row["updated"]; field)
-        updated_  = DateTime(field.value().value().str());
     if (auto field = row["name"]; field)
         name_  = field.value().value().str();
 }
@@ -25,6 +21,20 @@ with_id(i64 const id, std::string const& fields) noexcept {
             return Category(data[0]);
 
     return {};
+}
+
+std::vector<Category> Category::
+with_pid(i64 const pid, std::string const& fields) noexcept {
+    std::vector<Category> data{};
+
+    auto cmd = fmt::format("SELECT {} FROM category WHERE pid=?", fields);
+    if (auto opt = SQLite::instance().select(cmd, pid); opt)
+        if (auto result = opt.value(); not result.empty())
+            for (auto const& row : result)
+                data.emplace_back(row);
+
+    data.shrink_to_fit();
+    return data;
 }
 
 std::optional<std::string> Category::
@@ -77,4 +87,18 @@ names_chain_for(i64 id) noexcept {
 
     std::reverse(names.begin(), names.end());
     return names;
+}
+
+std::vector<i64> Category::
+ids_subchain_for(i64 const id) noexcept {
+    std::vector<i64> ids{id};
+
+    for (auto const& child : with_pid(id)) {
+        auto data = ids_subchain_for(child.id_);
+        std::copy(data.begin(), data.end(), std::back_inserter(ids));
+    }
+
+    ids.shrink_to_fit();
+    std::sort(ids.begin(), ids.end());
+    return ids;
 }

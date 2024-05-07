@@ -26,7 +26,12 @@
 
 /*------- include files:
 -------------------------------------------------------------------*/
+#include "../shared.hh"
 #include <QTableWidget>
+
+/*------- forward declarations:
+-------------------------------------------------------------------*/
+class QEvent;
 
 /*------- class:
 -------------------------------------------------------------------*/
@@ -35,4 +40,7 @@ class NotesTable : public QTableWidget {
 public:
     explicit NotesTable(QWidget* = nullptr);
     ~NotesTable() override = default;
+private:
+    void customEvent(QEvent*) override;
+    void update_content_for(i64) noexcept;
 };

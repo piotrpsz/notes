@@ -2,7 +2,7 @@
 // Created by piotr on 08.04.24.
 //
 
-#include "sqlite.h"
+#include "sqlite.hh"
 #include <fmt/core.h>
 
 // Close database (if possible).

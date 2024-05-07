@@ -25,7 +25,7 @@
 
 /*------- include files:
 -------------------------------------------------------------------*/
-#include "../sqlite/sqlite.h"
+#include "../sqlite/sqlite.hh"
 #include "../common/EventController.h"
 #include "CategoryTree.h"
 #include <QMenu>

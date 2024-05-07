@@ -26,7 +26,7 @@
 
 /*------- include files:
 -------------------------------------------------------------------*/
-#include "../shared.h"
+#include "../shared.hh"
 #include "types.h"
 #include <QTreeWidget>
 #include <optional>

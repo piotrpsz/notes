@@ -4,10 +4,10 @@
 
 /*------- include files:
 -------------------------------------------------------------------*/
-#include "stmt.h"
-#include "logger.h"
-#include "row.h"
-#include "value.h"
+#include "stmt.hh"
+#include "logger.hh"
+#include "row.hh"
+#include "value.hh"
 
 
 /*------- forward declarations:

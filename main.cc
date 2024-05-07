@@ -26,8 +26,8 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include "model/category.hh"
-#include "model/note.h"
-#include "sqlite/sqlite.h"
+#include "model/note.hh"
+#include "sqlite/sqlite.hh"
 #include "notes/MainWindow.h"
 #include <QApplication>
 #include <fmt/core.h>

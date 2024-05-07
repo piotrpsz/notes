@@ -3,10 +3,10 @@
 //
 #pragma once
 
-#include "logger.h"
-#include "../shared.h"
-#include "stmt.h"
-#include "query.h"
+#include "logger.hh"
+#include "../shared.hh"
+#include "stmt.hh"
+#include "query.hh"
 #include <sqlite3.h>
 #include <string>
 #include <array>

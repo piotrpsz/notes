@@ -2,7 +2,7 @@
 // Created by piotr on 08.04.24.
 //
 #pragma once
-#include "value.h"
+#include "value.hh"
 
 class query_t {
     std::string query_{};

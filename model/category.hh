@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "../shared.h"
-#include "../common/Datime.h"
-#include "../sqlite/sqlite.h"
+#include "../shared.hh"
+#include "../common/Datime.hh"
+#include "../sqlite/sqlite.hh"
 #include <string>
 #include <vector>
 #include <utility>
@@ -17,20 +17,21 @@
 class Category {
     i64 id_{};
     i64 pid_{};
-    DateTime created_{};
-    DateTime updated_{};
     std::string name_{};
 
 public:
     explicit Category(Row row);
     static std::optional<Category> with_id(i64 id, std::string const& fields = "*") noexcept;
+    static std::vector<Category> with_pid(i64 pid, std::string const& fields = "*") noexcept;
     static std::optional<std::string> name_with_id(i64 id) noexcept;
 
+
     [[nodiscard]] std::string str() const noexcept {
-        return fmt::format("id:{}, pid:{}, name:{}, created:{}, updated:{}", id_, pid_, name_, created_.str(), updated_.str());
+        return fmt::format("id:{}, pid:{}, name:{}", id_, pid_, name_);
     }
     static std::optional<std::pair<std::vector<i64>, std::vector<std::string>>> chain_for(i64 id) noexcept;
     static std::optional<std::vector<std::string>> names_chain_for(i64 id) noexcept;
+    static std::vector<i64> ids_subchain_for(i64 id) noexcept;
 
 public:
     static inline std::vector<std::string> const CreationCmd = {

@@ -5,8 +5,8 @@
 
 #include <optional>
 #include <sqlite3.h>
-#include "query.h"
-#include "result.h"
+#include "query.hh"
+#include "result.hh"
 
 class Stmt {
     sqlite3* db_{};

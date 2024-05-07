@@ -30,20 +30,20 @@ find_package(Qt6 COMPONENTS
 
 add_executable(notes main.cc
         sqlite/sqlite.cc
-        sqlite/sqlite.h
-        sqlite/logger.h
+        sqlite/sqlite.hh
+        sqlite/logger.hh
         sqlite/stmt.cc
-        sqlite/stmt.h
-        shared.h
-        sqlite/value.h
-        sqlite/field.h
-        sqlite/row.h
-        sqlite/result.h
-        sqlite/query.h
+        sqlite/stmt.hh
+        shared.hh
+        sqlite/value.hh
+        sqlite/field.hh
+        sqlite/row.hh
+        sqlite/result.hh
+        sqlite/query.hh
         model/category.cc
         model/category.hh
         model/note.cc
-        model/note.h
+        model/note.hh
         notes/MainWindow.cc
         notes/MainWindow.h
         notes/Settings.h
@@ -58,7 +58,7 @@ add_executable(notes main.cc
         notes/NoteWidget.h
         common/Event.h
         common/EventController.h
-        common/Datime.h
+        common/Datime.hh
         notes/NotesTableWidget.cc
         notes/NotesTableWidget.h
         notes/NotesTableToolbar.cc
