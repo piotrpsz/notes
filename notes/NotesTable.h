@@ -42,5 +42,8 @@ public:
     ~NotesTable() override = default;
 private:
     void customEvent(QEvent*) override;
-    void update_content_for(i64) noexcept;
+
+    /// Uaktualnienie tabeli notatek dla wskazanej kategorii.
+    /// \param id - numer ID kategorii, której notatki mają być wyświetlone.
+    void update_content_for(i64 id) noexcept;
 };

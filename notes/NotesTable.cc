@@ -61,6 +61,7 @@ void NotesTable::customEvent(QEvent* const event) {
     }
 }
 
+
 void NotesTable::update_content_for(i64 const id) noexcept {
     setRowCount(0);
     setColumnCount(2);
@@ -68,21 +69,11 @@ void NotesTable::update_content_for(i64 const id) noexcept {
     if (auto ids = Category::ids_subchain_for(id); not ids.empty()) {
         if (auto notes = Note::notes(std::move(ids)); not notes.empty()) {
             setRowCount(int(notes.size()));
+            for (auto const& note : notes) {
+
+            }
         }
     }
+
     update();
-
-
-//    if (ids.empty()) {
-//        setRowCount(0);
-//        setColumnCount(2);
-//        setEditTriggers(NoEditTriggers);
-//        setSelectionBehavior(SelectRows);
-//        update();
-//    }
-
-
-//    for (auto const& id : ids)
-//        fmt::print("{}\n", id);
-//    fmt::print("--------------------------------\n");
 }
