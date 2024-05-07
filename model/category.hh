@@ -23,11 +23,14 @@ class Category {
 
 public:
     explicit Category(Row row);
-    static std::optional<Category> with_id(i64 id) noexcept;
+    static std::optional<Category> with_id(i64 id, std::string const& fields = "*") noexcept;
+    static std::optional<std::string> name_with_id(i64 id) noexcept;
+
     [[nodiscard]] std::string str() const noexcept {
         return fmt::format("id:{}, pid:{}, name:{}, created:{}, updated:{}", id_, pid_, name_, created_.str(), updated_.str());
     }
     static std::optional<std::pair<std::vector<i64>, std::vector<std::string>>> chain_for(i64 id) noexcept;
+    static std::optional<std::vector<std::string>> names_chain_for(i64 id) noexcept;
 
 public:
     static inline std::vector<std::string> const CreationCmd = {

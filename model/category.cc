@@ -18,11 +18,24 @@ Category::Category(Row row) {
 }
 
 std::optional<Category> Category::
-with_id(i64 const id) noexcept {
-    if (auto result = SQLite::instance().select("SELECT * FROM category WHERE id=?", id); result)
+with_id(i64 const id, std::string const& fields) noexcept {
+    auto cmd = fmt::format("SELECT {} FROM category WHERE id=?", fields);
+    if (auto result = SQLite::instance().select(cmd, id); result)
         if (auto data = result.value(); not data.empty())
             return Category(data[0]);
 
+    return {};
+}
+
+std::optional<std::string> Category::
+name_with_id(i64 id) noexcept {
+    if (auto opt = SQLite::instance().select("SELECT name FROM category WHERE id=?", id); opt) {
+        if (auto result = opt.value(); not result.empty()) {
+            auto row = result[0];
+            if (auto field = row["name"]; field)
+                return field.value().value().str();
+        }
+    }
     return {};
 }
 
@@ -45,4 +58,23 @@ chain_for(i64 const id) noexcept {
     std::reverse(ids.begin(), ids.end());
     std::reverse(names.begin(), names.end());
     return std::make_pair(ids, names);
+}
+
+std::optional<std::vector<std::string>> Category::
+names_chain_for(i64 id) noexcept {
+    std::vector<std::string> names{};
+    auto current_id = id;
+
+    while (auto opt = with_id(current_id, "pid, name")) {
+        auto category = opt.value();
+        names.push_back(std::move(category.name_));
+        if (category.pid_ == 0) break;
+        current_id = category.pid_;
+    }
+
+    if (names.empty())
+        return {};
+
+    std::reverse(names.begin(), names.end());
+    return names;
 }

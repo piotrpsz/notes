@@ -43,6 +43,6 @@ public:
 
 private:
     void customEvent(QEvent*) override;
-    void update_chain_info(int id) noexcept;
+    void update_chain_info(int id = 0) noexcept;
     QLabel* const chain_info_;
 };

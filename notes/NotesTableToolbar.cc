@@ -25,7 +25,7 @@
 
 NotesTableToolbar::NotesTableToolbar(QWidget* const parent) :
     QToolBar(parent),
-    chain_info_{new QLabel{"Categories > Dupa > Jasiu"}}
+    chain_info_{new QLabel}
 {
     // https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
 
@@ -60,6 +60,8 @@ NotesTableToolbar::NotesTableToolbar(QWidget* const parent) :
     });
 
     EventController::instance().append(this, event::CategorySelected);
+
+    update_chain_info();
 }
 
 void NotesTableToolbar::customEvent(QEvent* const event) {
@@ -83,13 +85,14 @@ std::string fmt_chain_item(std::string const& name, bool last = false) noexcept 
 void NotesTableToolbar::update_chain_info(int const id) noexcept {
     std::string text{"<b><font color=#5499c7>Category:</font></b> "};
 
-    if (auto chain = Category::chain_for(id); chain) {
-        auto [ids, names] = chain.value();
-        auto idx_last = ids.size() - 1;
-        for (auto i = 0; i < idx_last; ++i)
-            text += fmt_chain_item(names[i]);
-        text += fmt_chain_item(names[idx_last], true);
+    if (id > 0) {
+        if (auto chain = Category::names_chain_for(id); chain) {
+            auto names = chain.value();
+            auto idx_last = names.size() - 1;
+            for (auto i = 0; i < idx_last; ++i)
+                text += fmt_chain_item(names[i]);
+            text += fmt_chain_item(names[idx_last], true);
+        }
     }
-
     chain_info_->setText(QString::fromStdString(text));
 }
