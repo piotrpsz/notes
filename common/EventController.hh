@@ -25,7 +25,7 @@
 
 /*------- include files:
 -------------------------------------------------------------------*/
-#include "Event.h"
+#include "Event.hh"
 #include <QHash>
 #include <QSet>
 #include <QList>

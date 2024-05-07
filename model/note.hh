@@ -16,10 +16,10 @@ class Note {
     std::string title_{};
     std::string description_{};
     std::string content_{};
-
+public:
     explicit Note(Row&& row);
     static std::optional<Note> with_id(i64 id, std::string const& fields = "*") noexcept;
-    static std::vector<Note> notes(std::vector<i64>&& ids) noexcept;
+    static std::vector<Note> notes(std::vector<i64> ids) noexcept;
 
 public:
     static inline std::vector<std::string> const CreationCmd{

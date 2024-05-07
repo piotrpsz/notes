@@ -56,8 +56,8 @@ add_executable(notes main.cc
         notes/NotesTable.h
         notes/NoteWidget.cc
         notes/NoteWidget.h
-        common/Event.h
-        common/EventController.h
+        common/Event.hh
+        common/EventController.hh
         common/Datime.hh
         notes/NotesTableWidget.cc
         notes/NotesTableWidget.h

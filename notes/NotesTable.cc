@@ -26,8 +26,9 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include "NotesTable.h"
+#include "../model/note.hh"
 #include "../model/category.hh"
-#include "../common/EventController.h"
+#include "../common/EventController.hh"
 #include <QTableWidgetItem>
 #include <QHeaderView>
 #include <fmt/core.h>
@@ -61,7 +62,16 @@ void NotesTable::customEvent(QEvent* const event) {
 }
 
 void NotesTable::update_content_for(i64 const id) noexcept {
-    auto ids = Category::ids_subchain_for(id);
+    setRowCount(0);
+    setColumnCount(2);
+
+    if (auto ids = Category::ids_subchain_for(id); not ids.empty()) {
+        if (auto notes = Note::notes(std::move(ids)); not notes.empty()) {
+            setRowCount(int(notes.size()));
+        }
+    }
+    update();
+
 
 //    if (ids.empty()) {
 //        setRowCount(0);
@@ -72,7 +82,7 @@ void NotesTable::update_content_for(i64 const id) noexcept {
 //    }
 
 
-    for (auto const& id : ids)
-        fmt::print("{}\n", id);
-    fmt::print("--------------------------------\n");
+//    for (auto const& id : ids)
+//        fmt::print("{}\n", id);
+//    fmt::print("--------------------------------\n");
 }

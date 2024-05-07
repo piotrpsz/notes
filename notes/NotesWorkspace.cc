@@ -29,7 +29,7 @@
 #include "NotesTableWidget.h"
 #include "NoteWidget.h"
 #include "Settings.h"
-#include "../common/EventController.h"
+#include "../common/EventController.hh"
 #include "EditDialog.h"
 #include <QVariant>
 #include <QShowEvent>

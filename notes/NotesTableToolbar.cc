@@ -15,7 +15,7 @@
 //
 
 #include "NotesTableToolbar.h"
-#include "../common/EventController.h"
+#include "../common/EventController.hh"
 #include "../model/category.hh"
 #include <QAction>
 #include <QIcon>

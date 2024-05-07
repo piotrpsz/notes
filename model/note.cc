@@ -3,22 +3,26 @@
 //
 
 #include "note.hh"
+#include <iostream>
+#include <numeric>
+#include <fmt/core.h>
+#include <range/v3/range.hpp>
 
-Note::Note(Row&& row) {
+Note::Note(Row &&row) {
     if (auto f = row["id"]; f)
         id_ = (*f).value().int64();
     if (auto f = row["pid"]; f)
         pid_ = (*f).value().int64();
     if (auto f = row["title"]; f)
-        title_  = (*f).value().str();
+        title_ = (*f).value().str();
     if (auto f = row["description"]; f)
-        description_  = (*f).value().str();
+        description_ = (*f).value().str();
     if (auto f = row["content"]; f)
-        content_  = (*f).value().str();
+        content_ = (*f).value().str();
 }
 
 std::optional<Note> Note::
-with_id(i64 const id, std::string const& fields) noexcept {
+with_id(i64 const id, std::string const &fields) noexcept {
     auto cmd = fmt::format("SELECT {} FROM category WHERE id=?", fields);
     if (auto result = SQLite::instance().select(cmd, id); result)
         if (auto data = result.value(); not data.empty())
@@ -28,6 +32,32 @@ with_id(i64 const id, std::string const& fields) noexcept {
 }
 
 std::vector<Note> Note::
-notes(std::vector<i64>&& ids) noexcept {
+notes(std::vector<i64> ids) noexcept {
+    // konwersja liczb na tekst
+    auto data = ids |
+               ranges::views::transform([](i64 const i) { return std::to_string(i); }) |
+               ranges::to<std::vector>();
 
+    // połączenie (join) tekstów z użyciem przecinka
+    auto acc = std::accumulate(
+            std::next(data.begin()),
+            data.end(),
+            data[0],
+            [](auto a, auto b) {
+                return fmt::format("{},{}", a, b);
+            });
+
+
+
+    std::vector<Note> vec{};
+    auto cmd = fmt::format("SELECT * FROM note WHERE id IN ({})", acc);
+
+    if (auto opt = SQLite::instance().select(cmd); opt) {
+        for (auto row : opt.value()) {
+            vec.emplace_back(std::move(row));
+        }
+    }
+
+    vec.shrink_to_fit();
+    return vec;
 }

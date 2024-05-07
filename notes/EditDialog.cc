@@ -25,7 +25,7 @@
 
 #include "EditDialog.h"
 #include "Editor.h"
-#include "../common/EventController.h"
+#include "../common/EventController.hh"
 #include <QIcon>
 #include <QFrame>
 #include <QLabel>
