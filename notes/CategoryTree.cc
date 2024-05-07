@@ -121,8 +121,9 @@ void CategoryTree::item_double_clicked(QTreeWidgetItem* const item, int) noexcep
     int const pid = item->data(0, PidRole).toInt(&ok_pid);
 
     if (ok_id and ok_pid)
-        EventController::instance().send(event::CategorySelected, id, pid);
+        EventController::instance().send(event::CategorySelected, id);
 }
+
 
 /// Add new main category.
 void CategoryTree::new_main_category() noexcept {

@@ -41,7 +41,7 @@ add_executable(notes main.cc
         sqlite/result.h
         sqlite/query.h
         model/category.cc
-        model/category.h
+        model/category.hh
         model/note.cc
         model/note.h
         notes/MainWindow.cc

@@ -22,5 +22,5 @@ public:
     Stmt& operator=(Stmt&&) = default;
 
     bool exec_without_result(query_t const& query) noexcept;
-    std::optional<result_t> exec_with_result(query_t const& query) noexcept;
+    std::optional<Result> exec_with_result(query_t const& query) noexcept;
 };

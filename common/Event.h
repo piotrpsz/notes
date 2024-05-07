@@ -45,7 +45,6 @@ public:
         return std::move(data_);
     }
     [[nodiscard]] QVector<QVariant> const& data() const& {
-        fmt::print("events reference returned\n");
         return data_;
     }
 };

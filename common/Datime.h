@@ -60,26 +60,26 @@ struct Time {
     int h{}, m{}, s{};
 };
 
-class Datime final {
+class DateTime final {
     date::time_zone const* zone = date::locate_zone("Europe/Warsaw");
     zoned_time_t tp_{};
 public:
     /// Data-czas teraz (now).
-    Datime() {
+    DateTime() {
         auto const now = std::chrono::system_clock::now();
         tp_ = date::make_zoned(zone, std::chrono::floor<std::chrono::seconds>(now));
     }
     /// Data-czas z timestampu (liczba sekund od początku epoki).
     /// \param timestamp - liczba sekund od początku epoki.
-    explicit Datime(i64 const timestamp) {
+    explicit DateTime(i64 const timestamp) {
         auto const tp = std::chrono::system_clock::from_time_t(timestamp);
         tp_ = date::make_zoned(zone, std::chrono::floor<std::chrono::seconds>(tp));
     }
-    explicit Datime(zoned_time_t const tp) : tp_{tp} {}
+    explicit DateTime(zoned_time_t const tp) : tp_{tp} {}
 
     /// Data-czas z tekstu (np. 2023-10-23 11:06:21).
     /// \param str - string z datą i godziną
-    explicit Datime(std::string const& str) {
+    explicit DateTime(std::string const& str) {
         std::stringstream in{str};
         date::local_time<std::chrono::seconds> tp;
         in >> date::parse("%F %T", tp);
@@ -88,41 +88,41 @@ public:
     }
 
     /// Data-czas z komponentów.
-    explicit Datime(Date const dt, Time const tm)
+    explicit DateTime(Date const dt, Time const tm)
             : tp_{from_components(dt, tm)}
     {}
 
     // Kopiowanie i przekazywanie - domyślne
-    Datime(Datime const&) = default;
-    Datime& operator=(Datime const&) = default;
-    Datime(Datime&&) = default;
-    Datime& operator=(Datime&&) = default;
-    ~Datime() = default;
+    DateTime(DateTime const&) = default;
+    DateTime& operator=(DateTime const&) = default;
+    DateTime(DateTime&&) = default;
+    DateTime& operator=(DateTime&&) = default;
+    ~DateTime() = default;
 
     /// Sprawdza czy wskazany obiekt określa ten sam punkt w czasie.
     /// \return True jeśli punkty w czasie są takie same, False w przeciwnym przepadku.
-    bool operator==(Datime const &rhs) const noexcept {
+    bool operator==(DateTime const &rhs) const noexcept {
         return timestamp() == rhs.timestamp();
     }
     /// Sprawdza czy wskazany obiekt określa inny punkt w czasie
     /// \return True jeśli punkty w czasie są różne, False w przeciwnym przypadku.
-    bool operator!=(Datime const &rhs) const noexcept {
+    bool operator!=(DateTime const &rhs) const noexcept {
         return !operator==(rhs);
     }
     /// Sprawdza czy wskazana data-czas (rhs) jest późniejsza.
     /// \return True jeśli rhs jest późniejszy, False w przeciwnym przypadku,
-    bool operator<(Datime const& rhs) const noexcept {
+    bool operator<(DateTime const& rhs) const noexcept {
         return timestamp() < rhs.timestamp();
     }
     /// Sprawdza czy wskazana data-czas (rhs) jest wcześniejsza.
     /// \return True jeśli rhs jest wcześniejszy, False w przeciwnym przypadku.
-    bool operator>(Datime const& rhs) const noexcept {
+    bool operator>(DateTime const& rhs) const noexcept {
         return timestamp() > rhs.timestamp();
     }
 
     /// Zwraca różnicę jako liczbę minut.
     [[nodiscard]] i64
-    minutes_from(Datime const& rhs) const noexcept {
+    minutes_from(DateTime const& rhs) const noexcept {
         auto const a = date::floor<std::chrono::minutes>(tp_.get_sys_time());
         auto const b = date::floor<std::chrono::minutes>(rhs.tp_.get_sys_time());
         return (b - a).count();
@@ -136,7 +136,7 @@ public:
     }
 
     /// Zmiana czasu na podany.
-    Datime& set_time(Time const tm) noexcept {
+    DateTime& set_time(Time const tm) noexcept {
         namespace chrono = std::chrono;
         auto t = date::floor<chrono::days>(tp_.get_local_time())
                  + chrono::hours(tm.h)
@@ -146,7 +146,7 @@ public:
         return *this;
     }
     /// Wyzerowanie sekund z ewentualnym zaokrągleniem minut.
-    Datime& clear_seconds() noexcept {
+    DateTime& clear_seconds() noexcept {
         namespace chrono = std::chrono;
         auto const days = date::floor<chrono::days>(tp_.get_local_time());
         date::hh_mm_ss hms{tp_.get_local_time() - days};
@@ -158,7 +158,7 @@ public:
         return *this;
     }
     /// Wyzerowanie czasu.
-    Datime& clear_time() noexcept {
+    DateTime& clear_time() noexcept {
         namespace chrono = std::chrono;
         auto t = date::floor<chrono::days>(tp_.get_local_time())
                  + chrono::hours(0)
@@ -168,11 +168,11 @@ public:
         return *this;
     }
     /// Początek dnia dla daty.
-    Datime& beginning_day() noexcept {
+    DateTime& beginning_day() noexcept {
         return clear_time();
     }
     /// Koniec dnia dla daty.
-    Datime& end_day() noexcept {
+    DateTime& end_day() noexcept {
         return set_time({23,59,59});
     }
     /// Wyznaczenie składników daty (bez czasu).
@@ -188,7 +188,7 @@ public:
     }
     /// Sprawdzenie czy to ten sam dzień.
     [[nodiscard]] bool
-    is_same_day(Datime const& rhs) const noexcept {
+    is_same_day(DateTime const& rhs) const noexcept {
         return date_components() == rhs.date_components();
     }
     /// Wyznaczenie składników czasu (bez daty).
@@ -226,7 +226,7 @@ public:
     /// Utworzenie nowej data-czasu przez dodanie wskazanej liczby dni.
     /// \param n - liczba dnie do dodania (może być ujemna)
     /// \return nowa data-czas
-    [[nodiscard]] Datime
+    [[nodiscard]] DateTime
     add_days(int const n) const noexcept {
         namespace chrono = std::chrono;
         auto const days = date::floor<chrono::days>(tp_.get_local_time());
@@ -236,14 +236,14 @@ public:
                           + hms.hours()
                           + hms.minutes()
                           + hms.seconds();
-        return Datime(make_zoned(zone, secs));
+        return DateTime(make_zoned(zone, secs));
     }
 
-    [[nodiscard]] Datime
+    [[nodiscard]] DateTime
     next_day() const noexcept {
         return add_days(1);
     }
-    [[nodiscard]] Datime
+    [[nodiscard]] DateTime
     prev_day() const noexcept {
         return add_days(-1);
     }
@@ -253,7 +253,7 @@ public:
         auto const wd = date::weekday(chrono::floor<chrono::days>(tp_.get_local_time()));
         return int(wd.iso_encoding());
     }
-    [[nodiscard]] std::pair<Datime, Datime>
+    [[nodiscard]] std::pair<DateTime, DateTime>
     week_range() const noexcept {
         auto const today_idx = week_day();
         return {add_days(-today_idx + 1), add_days(7 - today_idx)};

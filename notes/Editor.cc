@@ -116,14 +116,14 @@ void Editor::keyPressEvent(QKeyEvent* const event) {
 
 void Editor::select_font() noexcept {
     // https://doc.qt.io/qt-6/qfontdatabase.html#applicationFontFamilies
-    for (auto const& family : QFontDatabase::families()) {
-        fmt::print("{}\n", family.toStdString());
-        for (auto const& style : QFontDatabase::styles(family))
-            fmt::print("\t{}\n", style.toStdString());
-    }
+//    for (auto const& family : QFontDatabase::families()) {
+//        fmt::print("{}\n", family.toStdString());
+//        for (auto const& style : QFontDatabase::styles(family))
+//            fmt::print("\t{}\n", style.toStdString());
+//    }
 
     bool ok;
-    auto const fnt = QFontDialog::getFont(&ok, font(), this);
+    auto const fnt = QFontDialog::getFont(&ok, this);
     if (ok)
         setCurrentFont(fnt);
 }

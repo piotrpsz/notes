@@ -28,9 +28,21 @@
 -------------------------------------------------------------------*/
 #include <QToolBar>
 
+/*------- forward declarations:
+-------------------------------------------------------------------*/
+class QLabel;
+class QEvent;
+
+/*------- class:
+-------------------------------------------------------------------*/
 class NotesTableToolbar : public QToolBar {
     Q_OBJECT
 public:
-    NotesTableToolbar(QWidget* = nullptr);
+    explicit NotesTableToolbar(QWidget* = nullptr);
     ~NotesTableToolbar() override = default;
+
+private:
+    void customEvent(QEvent*) override;
+    void update_chain_info(int id) noexcept;
+    QLabel* const chain_info_;
 };

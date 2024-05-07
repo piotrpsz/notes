@@ -12,7 +12,7 @@
 
 /*------- forward declarations:
 -------------------------------------------------------------------*/
-row_t fetch_row_data(sqlite3_stmt* stmt, int column_count) noexcept;
+Row fetch_row_data(sqlite3_stmt* stmt, int column_count) noexcept;
 bool bind2stmt(sqlite3_stmt* stmt, std::vector<value_t> const& args) noexcept;
 bool bind_at(sqlite3_stmt* stmt, int idx, value_t const& v) noexcept;
 
@@ -43,8 +43,8 @@ bool Stmt::exec_without_result(query_t const& query) noexcept {
 }
 
 // Execute a query that returns the result
-std::optional<result_t> Stmt::exec_with_result(query_t const& query) noexcept {
-    result_t result{};
+std::optional<Result> Stmt::exec_with_result(query_t const& query) noexcept {
+    Result result{};
 
     if (query.valid())
         if (SQLITE_OK == sqlite3_prepare_v2(db_, query.query().c_str(), -1, &stmt_, nullptr))
@@ -71,8 +71,8 @@ std::optional<result_t> Stmt::exec_with_result(query_t const& query) noexcept {
 //*                                                                 *
 //*******************************************************************
 
-row_t fetch_row_data(sqlite3_stmt* const stmt, int const column_count) noexcept {
-    row_t row{};
+Row fetch_row_data(sqlite3_stmt* const stmt, int const column_count) noexcept {
+    Row row{};
 
     for (auto i = 0; i < column_count; i++) {
         std::string name{sqlite3_column_name(stmt, i)};

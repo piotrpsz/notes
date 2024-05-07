@@ -7,22 +7,22 @@
 #include <unordered_map>
 
 
-class row_t {
+class Row {
     std::unordered_map<std::string, Field> data_{};
 public:
-    row_t() = default;
+    Row() = default;
 
     /// Init object with one, initial field.
-    row_t(std::string const& name, value_t value) {
+    Row(std::string const& name, value_t value) {
         data_[name] = Field{name, std::move(value)};
     }
 
-    ~row_t() = default;
+    ~Row() = default;
 
-    row_t(row_t const&) = default;
-    row_t& operator=(row_t const&) = default;
-    row_t(row_t&&) = default;
-    row_t& operator=(row_t&&) = default;
+    Row(Row const&) = default;
+    Row& operator=(Row const&) = default;
+    Row(Row&&) = default;
+    Row& operator=(Row&&) = default;
 
     [[nodiscard]] bool empty() const noexcept {
         return data_.empty();
@@ -38,21 +38,21 @@ public:
         return data_.size();
     }
 
-    row_t& add(std::string name, value_t value) noexcept {
+    Row& add(std::string name, value_t value) noexcept {
         Field f{std::move(name), std::move(value)};
         return add(f);
     }
-    row_t& add(std::string name) noexcept {
+    Row& add(std::string name) noexcept {
         Field f{std::move(name)};
         return add(f);
     }
-    row_t& add(Field const& f) noexcept {
+    Row& add(Field const& f) noexcept {
         data_[f.name()] = f;
         return *this;
     }
 
     template<typename T>
-    row_t& add(std::string name, std::optional<T> value) noexcept {
+    Row& add(std::string name, std::optional<T> value) noexcept {
         return value
                ? add(std::move(name), std::move(*value))
                : add(name);

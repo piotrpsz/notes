@@ -32,7 +32,7 @@
 NotesTable::NotesTable(QWidget* const parent) :
         QTableWidget(parent)
 {
-    setRowCount(10);
+    setRowCount(0);
     setColumnCount(2);
     setEditTriggers(NoEditTriggers);
     setSelectionBehavior(SelectRows);

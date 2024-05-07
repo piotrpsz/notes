@@ -25,7 +25,7 @@
 
 /*------- include files:
 -------------------------------------------------------------------*/
-#include "model/category.h"
+#include "model/category.hh"
 #include "model/note.h"
 #include "sqlite/sqlite.h"
 #include "notes/MainWindow.h"

@@ -71,11 +71,11 @@ public:
         return update(query_t{str, args...});
     }
     //------- SELECT --------------------------------------
-    [[nodiscard]] std::optional<result_t> select(query_t const& query) const noexcept {
+    [[nodiscard]] std::optional<Result> select(query_t const& query) const noexcept {
         return Stmt(db_).exec_with_result(query);
     }
     template<typename... T>
-    [[nodiscard]] std::optional<result_t> select(std::string const& str, T... args) const noexcept {
+    [[nodiscard]] std::optional<Result> select(std::string const& str, T... args) const noexcept {
         return select(query_t{str, args...});
     }
 

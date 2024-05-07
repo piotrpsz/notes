@@ -55,6 +55,8 @@ EditDialog::EditDialog(QWidget* const parent) :
     auto const buttons{new QDialogButtonBox(QDialogButtonBox::Apply | QDialogButtonBox::Cancel)};
     auto const apply_button = buttons->button(QDialogButtonBox::Apply);
     connect(apply_button, &QPushButton::clicked, [this]() {
+        auto text = editor_->toHtml();
+        fmt::print("{}\n", text.toStdString());
         accept();
     });
     auto const cancel_button = buttons->button(QDialogButtonBox::Cancel);
