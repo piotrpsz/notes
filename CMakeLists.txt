@@ -53,7 +53,7 @@ add_executable(notes main.cc
         notes/NotesWorkspace.cc
         notes/NotesWorkspace.h
         notes/NotesTable.cc
-        notes/NotesTable.h
+        notes/NotesTable.hh
         notes/NoteWidget.cc
         notes/NoteWidget.h
         common/Event.hh
@@ -64,7 +64,7 @@ add_executable(notes main.cc
         notes/NotesTableToolbar.cc
         notes/NotesTableToolbar.h
         notes/EditDialog.cc
-        notes/EditDialog.h
+        notes/EditDialog.hh
         notes/Editor.cc
         notes/Editor.h
 )

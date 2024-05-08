@@ -23,7 +23,7 @@
 // Created by piotr on 27.04.24.
 //
 
-#include "EditDialog.h"
+#include "EditDialog.hh"
 #include "Editor.h"
 #include "../common/EventController.hh"
 #include <QIcon>
@@ -38,12 +38,13 @@
 #include <QDialogButtonBox>
 #include <fmt/core.h>
 
-EditDialog::EditDialog(QWidget* const parent) :
+EditDialog::EditDialog(qi64 const category_id, QWidget* const parent) :
     QDialog(parent),
     title_{new QLineEdit},
     description_{new QLineEdit},
     editor_{new Editor}
 {
+    fmt::print("category id: {}\n", category_id);
     setWindowTitle("Note");
     setSizeGripEnabled(true);
 

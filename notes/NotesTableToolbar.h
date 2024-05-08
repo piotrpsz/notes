@@ -27,6 +27,7 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include <QToolBar>
+#include "../shared.hh"
 
 /*------- forward declarations:
 -------------------------------------------------------------------*/
@@ -45,4 +46,5 @@ private:
     void customEvent(QEvent*) override;
     void update_chain_info(int id = 0) noexcept;
     QLabel* const chain_info_;
+    i64 current_category_id_{};
 };

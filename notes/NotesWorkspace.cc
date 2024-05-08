@@ -30,7 +30,7 @@
 #include "NoteWidget.h"
 #include "Settings.h"
 #include "../common/EventController.hh"
-#include "EditDialog.h"
+#include "EditDialog.hh"
 #include <QVariant>
 #include <QShowEvent>
 #include <memory>
@@ -78,15 +78,18 @@ void NotesWorkspace::customEvent(QEvent* const event) {
 
     switch (static_cast<int>(e->type())) {
         case event::NewNoteRequest: {
-            new_note();
+            if (auto args = e->data(); not args.empty()) {
+                if (auto value = args[0]; value.canConvert<qi64>())
+                    new_note(value.toInt());
+            }
             break;
         }
 
     }
 }
 
-void NotesWorkspace::new_note() noexcept {
-    auto dialog = std::make_unique<EditDialog>();
+void NotesWorkspace::new_note(qi64 const category_id) noexcept {
+    auto dialog = std::make_unique<EditDialog>(category_id);
 
     dialog->exec();
 }

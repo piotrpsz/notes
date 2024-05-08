@@ -49,8 +49,8 @@ NotesTableToolbar::NotesTableToolbar(QWidget* const parent) :
     addAction(edt_action);
     addAction(del_action);
 
-    connect(add_action, &QAction::triggered, []() {
-        EventController::instance().send(event::NewNoteRequest);
+    connect(add_action, &QAction::triggered, [this]() {
+        EventController::instance().send(event::NewNoteRequest, qint64(current_category_id_));
     });
     connect(edt_action, &QAction::triggered, []() {
         EventController::instance().send(event::EditNoteRequest);
@@ -83,6 +83,7 @@ std::string fmt_chain_item(std::string const& name, bool last = false) noexcept 
 }
 
 void NotesTableToolbar::update_chain_info(int const id) noexcept {
+    current_category_id_ = id;
     std::string text{"<b><font color=#5499c7>Category:</font></b> "};
 
     if (id > 0) {

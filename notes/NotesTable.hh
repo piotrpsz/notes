@@ -41,7 +41,9 @@ public:
     explicit NotesTable(QWidget* = nullptr);
     ~NotesTable() override = default;
 private:
-    void customEvent(QEvent*) override;
+    /// Odbieranie zdefiniowanych w programie zdarzeń.
+    /// \param event - zdarzenie
+    void customEvent(QEvent* event) override;
 
     /// Uaktualnienie tabeli notatek dla wskazanej kategorii.
     /// \param id - numer ID kategorii, której notatki mają być wyświetlone.

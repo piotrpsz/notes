@@ -27,6 +27,7 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include <QDialog>
+#include "types.h"
 
 /*------- forward declarations:
 -------------------------------------------------------------------*/
@@ -37,7 +38,7 @@ class QVBoxLayout;
 class EditDialog : public QDialog {
     Q_OBJECT
 public:
-    explicit EditDialog(QWidget* = nullptr);
+    explicit EditDialog(qi64 category_id, QWidget* = nullptr);
     ~EditDialog() override = default;
 
     QVBoxLayout* editor_layout() noexcept;

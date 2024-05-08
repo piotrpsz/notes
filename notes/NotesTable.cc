@@ -25,7 +25,7 @@
 
 /*------- include files:
 -------------------------------------------------------------------*/
-#include "NotesTable.h"
+#include "NotesTable.hh"
 #include "../model/note.hh"
 #include "../model/category.hh"
 #include "../common/EventController.hh"
@@ -69,8 +69,13 @@ void NotesTable::update_content_for(i64 const id) noexcept {
     if (auto ids = Category::ids_subchain_for(id); not ids.empty()) {
         if (auto notes = Note::notes(std::move(ids)); not notes.empty()) {
             setRowCount(int(notes.size()));
+            auto row = 0;
             for (auto const& note : notes) {
-
+                auto const item0 = new QTableWidgetItem(note.qtitle());
+                auto const item1 = new QTableWidgetItem(note.qdescription());
+                setItem(row, 0, item0);
+                setItem(row, 1, item1);
+                ++row;
             }
         }
     }

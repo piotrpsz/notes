@@ -4,7 +4,7 @@
 
 #include "NotesTableWidget.h"
 #include "NotesTableToolbar.h"
-#include "NotesTable.h"
+#include "NotesTable.hh"
 #include <QVBoxLayout>
 
 NotesTableWidget::NotesTableWidget(QWidget *const parent)

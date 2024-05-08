@@ -6,6 +6,7 @@
 #include "../shared.hh"
 #include "../common/Datime.hh"
 #include "../sqlite/sqlite.hh"
+#include <QString>
 #include <string>
 #include <vector>
 #include <optional>
@@ -20,6 +21,11 @@ public:
     explicit Note(Row&& row);
     static std::optional<Note> with_id(i64 id, std::string const& fields = "*") noexcept;
     static std::vector<Note> notes(std::vector<i64> ids) noexcept;
+
+    [[nodiscard]] i64 id() const noexcept { return id_; }
+    [[nodiscard]] QString qtitle() const noexcept { return QString::fromStdString(title_); }
+    [[nodiscard]] QString qdescription() const noexcept { return QString::fromStdString(description_); }
+    [[nodiscard]] QString qcontent() const noexcept { return QString::fromStdString(content_); }
 
 public:
     static inline std::vector<std::string> const CreationCmd{
