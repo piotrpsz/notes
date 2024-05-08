@@ -33,6 +33,7 @@
 
 /*------- forward declarations:
 -------------------------------------------------------------------*/
+class QTimer;
 class QMouseEvent;
 class QTreeWidgetItem;
 
@@ -64,6 +65,7 @@ private slots:
 
 private:
     QTreeWidgetItem* const root_;
+    QTimer* timer_ = nullptr;
 
     static std::string const InsertQuery;
     static std::string const DeleteQuery;

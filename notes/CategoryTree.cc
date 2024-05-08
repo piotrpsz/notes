@@ -31,6 +31,7 @@
 #include <QMenu>
 #include <QLabel>
 #include <QFrame>
+#include <QTimer>
 #include <QDialog>
 #include <QAction>
 #include <QLineEdit>
@@ -65,8 +66,22 @@ bool acceptable(i64 pid, std::string const& name) noexcept;
 
 CategoryTree::CategoryTree(QWidget* const parent) :
         QTreeWidget(parent),
-        root_{new QTreeWidgetItem(this)}
+        root_{new QTreeWidgetItem(this)},
+        timer_{new QTimer(this)}
 {
+    // Konfiguracja timera.
+    // Timer jest nadawcą zdarzenia z informacją, że ulegla zmianie wybrana kategoria.
+    // Ale timer wyśle zdarzenie(event) jeśli od zmiany minie 500 milisekund (pół sekundy),
+    // zapobiega to zbyt szybkim i częstym uaktualnieniom tabeli z notatkami.
+    timer_->setInterval(500);
+    timer_->setSingleShot(true);
+    connect(timer_, &QTimer::timeout, [this]() {
+        if (auto current_item = currentItem(); current_item) {
+            auto const id{current_item->data(0, IdRole).toInt()};
+            EventController::instance().send(event::CategorySelected, id);
+        }
+    });
+
     root_->setText(0, "Categories");
     root_->setData(0, IdRole, 0);
     root_->setData(0, PidRole, 0);
@@ -84,6 +99,10 @@ CategoryTree::CategoryTree(QWidget* const parent) :
     root_->setExpanded(true);
 
     connect(this, &QTreeWidget::itemDoubleClicked, this, &CategoryTree::item_double_clicked);
+    connect(this, &QTreeWidget::currentItemChanged, [this](auto, auto) {
+        timer_->stop();
+        timer_->start();
+    });
 }
 
 // Handle mouse clicks.
