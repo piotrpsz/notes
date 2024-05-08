@@ -35,14 +35,17 @@
 #include <QPushButton>
 #include <QGridLayout>
 #include <QApplication>
+#include <QMessageBox>
 #include <QDialogButtonBox>
 #include <fmt/core.h>
 
-EditDialog::EditDialog(qi64 const category_id, QWidget* const parent) :
+EditDialog::EditDialog(qi64 const category_id, std::optional<Note> note, QWidget* const parent) :
     QDialog(parent),
     title_{new QLineEdit},
     description_{new QLineEdit},
-    editor_{new Editor}
+    editor_{new Editor},
+    category_id_{category_id},
+    note_{std::move(note)}
 {
     fmt::print("category id: {}\n", category_id);
     setWindowTitle("Note");
@@ -55,9 +58,15 @@ EditDialog::EditDialog(qi64 const category_id, QWidget* const parent) :
 
     auto const buttons{new QDialogButtonBox(QDialogButtonBox::Apply | QDialogButtonBox::Cancel)};
     auto const apply_button = buttons->button(QDialogButtonBox::Apply);
+
     connect(apply_button, &QPushButton::clicked, [this]() {
-        auto text = editor_->toHtml();
-        fmt::print("{}\n", text.toStdString());
+        Note note = note_.value_or(Note())
+                .pid(category_id_)
+                .title(title_->text())
+                .description(description_->text())
+                .content(editor_->toHtml());
+        if (not note.save())
+            QMessageBox::critical(this, "Error", "Nie udało się zapisać");
         accept();
     });
     auto const cancel_button = buttons->button(QDialogButtonBox::Cancel);
@@ -128,4 +137,9 @@ QVBoxLayout* EditDialog::editor_layout() noexcept {
     layout->addWidget(toolbar);
     layout->addWidget(editor_);
     return layout;
+}
+
+void EditDialog::
+save_note(qint64 const category_id, qstr const& title, qstr const& description, qstr const& content) const noexcept {
+
 }

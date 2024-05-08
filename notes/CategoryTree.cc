@@ -116,11 +116,10 @@ void CategoryTree::mousePressEvent(QMouseEvent* const event) {
 }
 
 void CategoryTree::item_double_clicked(QTreeWidgetItem* const item, int) noexcept {
-    bool ok_id{}, ok_pid{};
+    bool ok_id{};
     int const id = item->data(0, IdRole).toInt(&ok_id);
-    int const pid = item->data(0, PidRole).toInt(&ok_pid);
 
-    if (ok_id and ok_pid)
+    if (ok_id)
         EventController::instance().send(event::CategorySelected, id);
 }
 

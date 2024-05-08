@@ -3,8 +3,9 @@
 //
 
 #include "note.hh"
-#include <iostream>
+#include "../sqlite/sqlite.hh"
 #include <numeric>
+#include <string>
 #include <fmt/core.h>
 #include <range/v3/range.hpp>
 
@@ -31,6 +32,25 @@ with_id(i64 const id, std::string const &fields) noexcept {
     return {};
 }
 
+bool Note::
+insert() noexcept {
+    using namespace std::string_literals;
+    auto cmd{"INSERT INTO note (pid, title, description, content) VALUES (?,?,?,?)"s};
+    if (auto id = SQLite::instance().insert(cmd, pid_, title_, description_, content_); id > 0) {
+        id_ = id;
+        return true;
+    }
+    return {};
+}
+
+bool Note::
+update() noexcept {
+    using namespace std::string_literals;
+    auto cmd{"UPDATE note SET title=?, description=?, content=? WHERE id=?"s};
+    return SQLite::instance().update(cmd, title_, description_, content_);
+}
+
+// Odczyt z bazy danych notatek których numery ID są podane jako argument w wektorze 'ids'.
 std::vector<Note> Note::
 notes(std::vector<i64> ids) noexcept {
     // konwersja liczb na tekst
@@ -50,7 +70,7 @@ notes(std::vector<i64> ids) noexcept {
 
 
     std::vector<Note> vec{};
-    auto cmd = fmt::format("SELECT * FROM note WHERE id IN ({})", acc);
+    auto cmd = fmt::format("SELECT * FROM note WHERE pid IN ({})", acc);
 
     if (auto opt = SQLite::instance().select(cmd); opt) {
         for (auto row : opt.value()) {

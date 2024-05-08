@@ -28,6 +28,8 @@
 -------------------------------------------------------------------*/
 #include <QDialog>
 #include "types.h"
+#include "../model/note.hh"
+#include <optional>
 
 /*------- forward declarations:
 -------------------------------------------------------------------*/
@@ -38,15 +40,18 @@ class QVBoxLayout;
 class EditDialog : public QDialog {
     Q_OBJECT
 public:
-    explicit EditDialog(qi64 category_id, QWidget* = nullptr);
+    explicit EditDialog(qi64 category_id, std::optional<Note> note = {}, QWidget* = nullptr);
     ~EditDialog() override = default;
 
     QVBoxLayout* editor_layout() noexcept;
 
 private:
     void showEvent(QShowEvent*) override;
+    void save_note(qint64 category_id, qstr const& title, qstr const& description, qstr const& content) const noexcept;
 
     QLineEdit* const title_;
     QLineEdit* const description_;
     Editor* const editor_;
+    qint64 category_id_;
+    std::optional<Note> note_;
 };
