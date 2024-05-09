@@ -15,6 +15,7 @@
 #include <charconv>
 #include <fmt/core.h>
 #include <range/v3/all.hpp>
+#include <qglobal.h>
 
 using u8 = uint8_t;
 using u16 = uint16_t;
@@ -25,6 +26,12 @@ using i64 = int64_t;
 using uint = unsigned int;
 using f32 = float;
 using f64 = double;
+
+using qi64 = qint64;
+using isize = qsizetype;
+using qstr = QString;
+using qvar = QVariant;
+
 
 namespace fs = std::filesystem;
 

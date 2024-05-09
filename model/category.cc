@@ -4,6 +4,8 @@
 
 #include "category.hh"
 
+using namespace std;
+
 Category::Category(Row row) {
     if (auto field = row["id"]; field)
         id_  = field.value().value().int64();
@@ -11,6 +13,24 @@ Category::Category(Row row) {
         pid_  = field.value().value().int64();
     if (auto field = row["name"]; field)
         name_  = field.value().value().str();
+}
+
+optional<vector<Category>> Category::
+all() noexcept {
+    using namespace std::string_literals;
+    auto cmd{"SELECT * FROM category"s};
+
+    if (auto selected = SQLite::instance().select(cmd); selected) {
+        if (auto result = selected.value(); not result.empty()) {
+            vector<Category> vec{};
+            vec.reserve(result.size());
+            for (auto &&row: result)
+                vec.emplace_back(row);
+            return vec;
+        }
+    }
+
+    return {};
 }
 
 std::optional<Category> Category::

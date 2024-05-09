@@ -67,8 +67,11 @@ bool acceptable(i64 pid, std::string const& name) noexcept;
 CategoryTree::CategoryTree(QWidget* const parent) :
         QTreeWidget(parent),
         root_{new QTreeWidgetItem(this)},
-        timer_{new QTimer(this)}
+        timer_{new QTimer(this)},
+        story_{new StoreCategory(this)}
 {
+    story_->print();
+
     // Konfiguracja timera.
     // Timer jest nadawcą zdarzenia z informacją, że ulegla zmianie wybrana kategoria.
     // Ale timer wyśle zdarzenie(event) jeśli od zmiany minie 500 milisekund (pół sekundy),
@@ -82,6 +85,8 @@ CategoryTree::CategoryTree(QWidget* const parent) :
         }
     });
 
+    // Ustawiamy kategorię 'root', która jest rodzicem
+    // wszystkich innych kategorii.
     root_->setText(0, "Categories");
     root_->setData(0, IdRole, 0);
     root_->setData(0, PidRole, 0);
@@ -145,16 +150,14 @@ void CategoryTree::item_double_clicked(QTreeWidgetItem* const item, int) noexcep
 
 /// Add new main category.
 void CategoryTree::new_main_category() noexcept {
-    if (auto category_opt = category_dialog(Category{}); category_opt) {
-        auto new_category = std::move(*category_opt);
-        auto [_, pid, qname] = new_category;
-        auto name = qname.toStdString();
+    if (auto opt = category_dialog(Category{}); opt) {
+        auto category = opt.value();
 
-        if (acceptable(pid, name)) {
-            auto const id = SQLite::instance().insert(InsertQuery, pid, name);
+        if (acceptable(category.pid(), category.name())) {
+            auto const id = SQLite::instance().insert(InsertQuery, category.pid(), category.name());
             if (id not_eq SQLite::InvalidRowid) {
-                new_category.id = id;
-                auto const item = child_from_category(root_, std::move(new_category));
+                category.id(id);
+                auto const item = child_from_category(root_, std::move(category));
                 setCurrentItem(item);
             }
         }
@@ -165,52 +168,51 @@ void CategoryTree::new_main_category() noexcept {
 void CategoryTree::new_subcategory() noexcept {
     // Get current selected item (parent item).
     QTreeWidgetItem* current_item = currentItem();
-    auto category = category_from(current_item);
+    auto oryginal_category = category_from(current_item);
 
-    if (auto category_opt = category_dialog(std::move(category)); category_opt) {
-        auto new_category = std::move(*category_opt);
-        auto [_, pid, qname] = new_category;
-        auto name = qname.toStdString();
+    if (auto opt = category_dialog(std::move(oryginal_category)); opt) {
+        auto category = opt.value();
 
-        if (acceptable(pid, name)) {
-            auto const id = SQLite::instance().insert(InsertQuery, pid, name);
+        if (acceptable(category.pid(), category.name())) {
+            auto const id = SQLite::instance().insert(InsertQuery, category.pid(), category.name());
             if (id not_eq SQLite::InvalidRowid) {
-                new_category.id = id;
-                auto const item = child_from_category(current_item, std::move(new_category));
+                category.id(id);
+                auto const item = child_from_category(current_item, std::move(category));
                 setCurrentItem(item);
             }
         }
     }
 }
 
-/// Delete current category/item.
+// Usunięcie aktualnej kategorii.
 void CategoryTree::remove_category() noexcept {
-    auto item = currentItem();
-    if (item == nullptr) return;
+    if (auto item = currentItem(); item) {
+        auto category = category_from(item);
 
-    auto [id, pid, _] = category_from(item);
-    if (auto ok = has_subcategories(id); ok and ok.value()) {
-        QMessageBox::warning(QApplication::activeWindow(), RemoveTitle, RemoveMessage);
-        return;
-    }
-    // TODO check if category contains notes
+        // Jeśli kategoria zawiera pod-kategorje prosimy użytkownika
+        // o potwierdzenie czy rzeczywiście tego chce.
+        if (auto ok = has_subcategories(category.id()); ok and ok.value()) {
+            QMessageBox::warning(QApplication::activeWindow(), RemoveTitle, RemoveMessage);
+            return;
+        }
+        // TODO check if category contains notes
 
-    if (auto ok = SQLite::instance().exec(DeleteQuery, id); ok) {
-        item->parent()->removeChild(item);
-        delete item;
+        if (auto ok = SQLite::instance().exec(DeleteQuery, category.id()); ok) {
+            item->parent()->removeChild(item);
+            delete item;
+        }
     }
 }
 
+// Edycja aktualnej kategorii.
 void CategoryTree::
 edit_item() noexcept {
     if (auto item = currentItem(); item)
-        if (auto category = category_dialog(category_from(item), true)) {
-            auto [id, pid, qname] = category.value();
-            auto name = qname.toStdString();
-
-            if (acceptable(pid, name))
-                if (SQLite::instance().update(UpdateQuery, name, id)) {
-                    item->setText(0, qname);
+        if (auto opt = category_dialog(category_from(item), true); opt) {
+            auto category = opt.value();
+            if (acceptable(category.pid(), category.name()))
+                if (SQLite::instance().update(UpdateQuery, category.name(), category.id())) {
+                    item->setText(0, category.qname());
                     item->parent()->sortChildren(0, Qt::AscendingOrder);
                 }
         }
@@ -219,42 +221,42 @@ edit_item() noexcept {
 QTreeWidgetItem* CategoryTree::
 child_from_category(QTreeWidgetItem* const parent, Category&& category) noexcept {
     auto const item = new QTreeWidgetItem(parent);
-    item->setText(0, category.name);
-    item->setData(0, IdRole, qint64(category.id));
-    item->setData(0, PidRole, qint64(category.pid));
-    // Since we added a new subcategory-item, we need to sort them again
+    item->setText(0, category.qname());
+    item->setData(0, IdRole, category.qid());
+    item->setData(0, PidRole, category.qpid());
+    // Ponieważ dodaliśmy nową pod-kategorię to kategorię-rodzica musimy posortować.
     parent->sortChildren(0, Qt::AscendingOrder);
     return item;
 }
 
 // Converts text and data of QTreeWidgetItem to Category.
-CategoryTree::Category CategoryTree::
+Category CategoryTree::
 category_from(QTreeWidgetItem const* const item) noexcept {
     Category category{};
     if (auto v = item->data(0, IdRole); v.isValid())
-        category.id = v.toInt();
+        category.id(v.toInt());
     if (auto v = item->data(0, PidRole); v.isValid())
-        category.pid = v.toInt();
+        category.pid(v.toInt());
     if (auto v = item->text(0); not v.isEmpty())
-        category.name = v;
+        category.name(v);
     return category;
 }
 
 // Run the dialog for category edition.
-std::optional<CategoryTree::Category> CategoryTree::
+std::optional<Category> CategoryTree::
 category_dialog(Category&& category, bool const rename) noexcept {
     auto const parent_layout = new QHBoxLayout;
-    if (category.id == 0)
+    if (category.id() == 0)
         parent_layout->addWidget(new QLabel("No parents, this will be the new main category."));
     else {
         // TODO fetch all parent categories
-        auto str = fmt::format("Categories > {}", category.name.toStdString());
+        auto str = fmt::format("Categories > {}", category.name());
         parent_layout->addWidget(new QLabel(qstr::fromStdString(str)));
     }
 
     auto const editor = new QLineEdit;
     if (rename) {
-        editor->setText(category.name);
+        editor->setText(category.qname());
         editor->selectAll();
     }
 
@@ -279,19 +281,16 @@ category_dialog(Category&& category, bool const rename) noexcept {
     main_layout->addSpacing(10);
     main_layout->addWidget(button_box);
     dialog->setLayout(main_layout);
-    if (category.id == 0)
+    if (category.id() == 0)
         dialog->setWindowTitle("Add new main category");
     else
         dialog->setWindowTitle("Add new subcategory");
 
     if (dialog->exec() and not editor->text().isEmpty()) {
-        Category result{.name = editor->text()};
-        if (rename) {
-            result.id = category.id;
-            result.pid = category.pid;
-        }
-        else
-            result.pid = category.id;
+        Category result{};
+        result.name(editor->text());
+        if (rename) result.id(category.id()).pid(category.pid());
+        else result.pid(category.id());
         return result;
     }
     return {};
