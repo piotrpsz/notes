@@ -53,9 +53,11 @@ private:
     void mousePressEvent(QMouseEvent*) override;
 
     static std::optional<Category> category_dialog(Category&& category, bool rename = false) noexcept;
-    static void add_items_for(QTreeWidgetItem* item) noexcept;
+    void add_items_for(QTreeWidgetItem* item) noexcept;
     static Category category_from(QTreeWidgetItem const*) noexcept;
     static QTreeWidgetItem* child_from_category(QTreeWidgetItem*, Category&&) noexcept;
+
+    bool already_exist(i64 pid, std::string const& name) const noexcept;
 
 private slots:
     void new_subcategory() noexcept;
@@ -63,11 +65,12 @@ private slots:
     void remove_category() noexcept;
     void edit_item() noexcept;
     static void item_double_clicked(QTreeWidgetItem*, int) noexcept;
+//    void add_items_for(QTreeWidgetItem* const parent) noexcept;
 
 private:
     QTreeWidgetItem* const root_;
     QTimer* timer_ = nullptr;
-    StoreCategory* const story_;
+    StoreCategory* const store_;
 
     static std::string const InsertQuery;
     static std::string const DeleteQuery;

@@ -32,6 +32,7 @@
 #include <QLabel>
 #include <QFrame>
 #include <QTimer>
+#include <QString>
 #include <QDialog>
 #include <QAction>
 #include <QLineEdit>
@@ -59,18 +60,16 @@ static char const* const RemoveMessage = "This category cannot be deleted becaus
 
 /*------- forward declarations:
 -------------------------------------------------------------------*/
-std::optional<int> count(i64 pid, std::string const& name) noexcept;
-std::optional<bool> has_subcategories(i64 id) noexcept;
-bool acceptable(i64 pid, std::string const& name) noexcept;
+
 
 
 CategoryTree::CategoryTree(QWidget* const parent) :
         QTreeWidget(parent),
         root_{new QTreeWidgetItem(this)},
         timer_{new QTimer(this)},
-        story_{new StoreCategory(this)}
+        store_{new StoreCategory(this)}
 {
-    story_->print();
+    store_->print();
 
     // Konfiguracja timera.
     // Timer jest nadawcą zdarzenia z informacją, że ulegla zmianie wybrana kategoria.
@@ -153,7 +152,7 @@ void CategoryTree::new_main_category() noexcept {
     if (auto opt = category_dialog(Category{}); opt) {
         auto category = opt.value();
 
-        if (acceptable(category.pid(), category.name())) {
+        if (already_exist(category.pid(), category.name())) {
             auto const id = SQLite::instance().insert(InsertQuery, category.pid(), category.name());
             if (id not_eq SQLite::InvalidRowid) {
                 category.id(id);
@@ -173,7 +172,7 @@ void CategoryTree::new_subcategory() noexcept {
     if (auto opt = category_dialog(std::move(oryginal_category)); opt) {
         auto category = opt.value();
 
-        if (acceptable(category.pid(), category.name())) {
+        if (already_exist(category.pid(), category.name())) {
             auto const id = SQLite::instance().insert(InsertQuery, category.pid(), category.name());
             if (id not_eq SQLite::InvalidRowid) {
                 category.id(id);
@@ -191,7 +190,7 @@ void CategoryTree::remove_category() noexcept {
 
         // Jeśli kategoria zawiera pod-kategorje prosimy użytkownika
         // o potwierdzenie czy rzeczywiście tego chce.
-        if (auto ok = has_subcategories(category.id()); ok and ok.value()) {
+        if (store_->has_subcategories(category.id())) {
             QMessageBox::warning(QApplication::activeWindow(), RemoveTitle, RemoveMessage);
             return;
         }
@@ -210,7 +209,7 @@ edit_item() noexcept {
     if (auto item = currentItem(); item)
         if (auto opt = category_dialog(category_from(item), true); opt) {
             auto category = opt.value();
-            if (acceptable(category.pid(), category.name()))
+            if (already_exist(category.pid(), category.name()))
                 if (SQLite::instance().update(UpdateQuery, category.name(), category.id())) {
                     item->setText(0, category.qname());
                     item->parent()->sortChildren(0, Qt::AscendingOrder);
@@ -296,53 +295,31 @@ category_dialog(Category&& category, bool const rename) noexcept {
     return {};
 }
 
-/// Read all children (with sub-children) for passed item.
+/// Add all children (with sub-children) for passed item.
 void CategoryTree::
 add_items_for(QTreeWidgetItem* const parent) noexcept {
-    static std::string const query = "SELECT * FROM category WHERE pid=? ORDER BY name";
-
-    auto pid = parent->data(0, IdRole).toInt();
-    if (auto result_opt = SQLite::instance().select(query, pid); result_opt)
-        if (auto result = *result_opt; not result.empty())
-            for (auto&& row : result) {
-                auto const item = new QTreeWidgetItem(parent);
-                item->setText(0, qstr::fromStdString(row["name"].value().value().str()));
-                item->setData(0, IdRole, row["id"].value().value().isize());
-                item->setData(0, PidRole, row["pid"].value().value().isize());
-                add_items_for(item);
-            }
+    auto const pid = parent->data(0, IdRole).toInt();
+    auto childs = store_->childs(pid);
+    std::ranges::sort(childs, [](auto const& a, auto const& b) {
+       return QString::compare(a.qname(), b.qname(), Qt::CaseInsensitive) < 0;
+    });
+    std::ranges::for_each(childs, [parent, this](auto const& category) {
+        auto const item = new QTreeWidgetItem(parent);
+        item->setText(0, category.qname());
+        item->setData(0, IdRole, category.qid());
+        item->setData(0, PidRole, category.qpid());
+        add_items_for(item);
+    });
 }
 
-bool acceptable(i64 const pid, std::string const& name) noexcept {
-    auto n = count(pid, name);
 
-    if (not n.has_value()) {
-        QMessageBox::critical(QApplication::activeWindow(), "Database Error", "Database operation error.");
-        return {};     // Database error
-    }
+bool CategoryTree::
+already_exist(i64 const pid, std::string const& name) const noexcept {
+    if (not store_->exist(pid, name))
+        return true;
 
-    if (n.value() not_eq 0) {
-        // Category with the name already exists
-        auto msg = fmt::format("The subcategory '{}' already exists!", name);
-        QMessageBox::warning(QApplication::activeWindow(), "Unacceptable category name", QString::fromStdString(msg));
-        return {};
-    }
-
-    return true;
-}
-
-std::optional<int> count(i64 pid, std::string const& name) noexcept {
-    if (auto oresult  = SQLite::instance().select(CategoryTree::CountQuery, pid, name); oresult)
-        if (auto result = *oresult; not result.empty())
-            if (auto ocount = result[0]["count"]; ocount)
-                return ocount.value().value().int64();
-    return {};
-}
-
-std::optional<bool> has_subcategories(i64 const id) noexcept {
-    if (auto result = SQLite::instance().select(CategoryTree::SubcategoriesCountQuery, id); result and not result.value().empty())
-        if (auto count = result.value()[0]["count"]; count)
-            return count.value().value().int64() not_eq 0;
-
+    // Pod-kategoria o takiej nazwie już istnieje (w ramach aktualnej kategorii).
+    auto msg = fmt::format("The subcategory '{}' already exists!", name);
+    QMessageBox::warning(QApplication::activeWindow(), "Unacceptable category name", QString::fromStdString(msg));
     return {};
 }
