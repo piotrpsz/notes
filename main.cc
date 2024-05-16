@@ -36,7 +36,6 @@
 
 bool create_cmds(SQLite const& db, std::vector<std::string> const& commands) noexcept {
     for (auto const& cmd : commands) {
-        fmt::print("{}\n", cmd);
         auto const ok = db.exec(cmd);
         if (not ok) return {};
     }

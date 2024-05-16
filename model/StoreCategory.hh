@@ -19,6 +19,7 @@ public:
     // co copy
     StoreCategory(StoreCategory const&) = delete;
     StoreCategory& operator=(StoreCategory const&) = delete;
+    
     // no move
     StoreCategory(StoreCategory&&) = delete;
     StoreCategory& operator=(StoreCategory&&) = delete;

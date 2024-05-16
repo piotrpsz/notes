@@ -49,7 +49,7 @@ add_executable(notes main.cc
         notes/Settings.h
         notes/types.h
         notes/CategoryTree.cc
-        notes/CategoryTree.h
+        notes/CategoryTree.hh
         notes/NotesWorkspace.cc
         notes/NotesWorkspace.h
         notes/NotesTable.cc

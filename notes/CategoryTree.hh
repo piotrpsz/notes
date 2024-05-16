@@ -56,21 +56,21 @@ private:
     void add_items_for(QTreeWidgetItem* item) noexcept;
     static Category category_from(QTreeWidgetItem const*) noexcept;
     static QTreeWidgetItem* child_from_category(QTreeWidgetItem*, Category&&) noexcept;
-
-    bool already_exist(i64 pid, std::string const& name) const noexcept;
+    [[nodiscard]] bool already_exist(i64 pid, std::string const& name) const noexcept;
+    QTreeWidgetItem* item_with_id(i64 id) noexcept;
+    static QTreeWidgetItem* child_with_id_for(QTreeWidgetItem* parent, i64 id) noexcept;
+    void update_content() noexcept;
 
 private slots:
     void new_subcategory() noexcept;
     void new_main_category() noexcept;
     void remove_category() noexcept;
     void edit_item() noexcept;
-    static void item_double_clicked(QTreeWidgetItem*, int) noexcept;
-//    void add_items_for(QTreeWidgetItem* const parent) noexcept;
 
 private:
-    QTreeWidgetItem* const root_;
-    QTimer* timer_ = nullptr;
-    StoreCategory* const store_;
+    QTreeWidgetItem* root_{};
+    QTimer* const timer_;
+    StoreCategory* store_{};
 
     static std::string const InsertQuery;
     static std::string const DeleteQuery;

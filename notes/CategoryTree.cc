@@ -27,7 +27,7 @@
 -------------------------------------------------------------------*/
 #include "../sqlite/sqlite.hh"
 #include "../common/EventController.hh"
-#include "CategoryTree.h"
+#include "CategoryTree.hh"
 #include <QMenu>
 #include <QLabel>
 #include <QFrame>
@@ -64,13 +64,9 @@ static char const* const RemoveMessage = "This category cannot be deleted becaus
 
 
 CategoryTree::CategoryTree(QWidget* const parent) :
-        QTreeWidget(parent),
-        root_{new QTreeWidgetItem(this)},
-        timer_{new QTimer(this)},
-        store_{new StoreCategory(this)}
+    QTreeWidget(parent),
+    timer_(new QTimer(this))
 {
-    store_->print();
-
     // Konfiguracja timera.
     // Timer jest nadawcą zdarzenia z informacją, że ulegla zmianie wybrana kategoria.
     // Ale timer wyśle zdarzenie(event) jeśli od zmiany minie 500 milisekund (pół sekundy),
@@ -84,12 +80,6 @@ CategoryTree::CategoryTree(QWidget* const parent) :
         }
     });
 
-    // Ustawiamy kategorię 'root', która jest rodzicem
-    // wszystkich innych kategorii.
-    root_->setText(0, "Categories");
-    root_->setData(0, IdRole, 0);
-    root_->setData(0, PidRole, 0);
-
     auto p = palette();
     p.setColor(QPalette::Base, QColor{60, 60, 60, 255});
     setAutoFillBackground(true);
@@ -99,14 +89,33 @@ CategoryTree::CategoryTree(QWidget* const parent) :
     setColumnCount(1);
     setHorizontalScrollMode(ScrollPerPixel);
 
-    add_items_for(root_);
-    root_->setExpanded(true);
-
-    connect(this, &QTreeWidget::itemDoubleClicked, this, &CategoryTree::item_double_clicked);
     connect(this, &QTreeWidget::currentItemChanged, [this](auto, auto) {
         timer_->stop();
         timer_->start();
     });
+
+    update_content();
+    setCurrentItem(root_);
+}
+
+// Utworzenie drzewa kategorii od nowa.
+// Od nowa tzn. odczytujemy najpierw bazę danych kategorii.
+void CategoryTree::update_content() noexcept {
+    clear();
+
+    delete store_;
+    store_ = new StoreCategory(this);
+
+    root_ = new QTreeWidgetItem(this);
+
+    // Ustawiamy kategorię 'root', która jest rodzicem
+    // wszystkich innych kategorii.
+    root_->setText(0, "Categories");
+    root_->setData(0, IdRole, 0);
+    root_->setData(0, PidRole, 0);
+
+    add_items_for(root_);
+    root_->setExpanded(true);
 }
 
 // Handle mouse clicks.
@@ -138,46 +147,47 @@ void CategoryTree::mousePressEvent(QMouseEvent* const event) {
     QTreeWidget::mousePressEvent(event);
 }
 
-void CategoryTree::item_double_clicked(QTreeWidgetItem* const item, int) noexcept {
-    bool ok_id{};
-    int const id = item->data(0, IdRole).toInt(&ok_id);
-
-    if (ok_id)
-        EventController::instance().send(event::CategorySelected, id);
-}
-
-
-/// Add new main category.
+/// Dodanie nowej kategorii głównej,
 void CategoryTree::new_main_category() noexcept {
     if (auto opt = category_dialog(Category{}); opt) {
         auto category = opt.value();
 
-        if (already_exist(category.pid(), category.name())) {
+        // w ramach kategorii żadne dwie bezpośrednie(!) podkategorie nie mogą się tak samo nazywać
+        if (not already_exist(category.pid(), category.name())) {
+            // zapis podanej nazwy kategorii do bazy danych
             auto const id = SQLite::instance().insert(InsertQuery, category.pid(), category.name());
             if (id not_eq SQLite::InvalidRowid) {
-                category.id(id);
-                auto const item = child_from_category(root_, std::move(category));
-                setCurrentItem(item);
+                // utworzenie drzewa kategorii od nowa
+                update_content();
+                // nowo utworzona podkategoria zostaje automatycznie wybrana
+                if (auto item = child_with_id_for(root_, id); item)
+                    setCurrentItem(item);
             }
         }
     }
 }
 
-/// Add new subcategory.
+/// Dodanie nowej podkategorii do aktualnie wybranej w drzewie kategorii.
 void CategoryTree::new_subcategory() noexcept {
-    // Get current selected item (parent item).
-    QTreeWidgetItem* current_item = currentItem();
-    auto oryginal_category = category_from(current_item);
+    // wyznaczenie aktualnie wybranej w drzewie kategorii.
+    // to będzie tak zwany parent-item.
+    QTreeWidgetItem* parent_item = currentItem();
+    if (parent_item == nullptr) return;
+    auto parent_category = category_from(parent_item);
 
-    if (auto opt = category_dialog(std::move(oryginal_category)); opt) {
+    if (auto opt = category_dialog(std::move(parent_category)); opt) {
         auto category = opt.value();
-
-        if (already_exist(category.pid(), category.name())) {
+        // w ramach kategorii żadne dwie bezpośrednie(!) podkategorie nie mogą się tak samo nazywać
+        if (not already_exist(category.pid(), category.name())) {
             auto const id = SQLite::instance().insert(InsertQuery, category.pid(), category.name());
             if (id not_eq SQLite::InvalidRowid) {
-                category.id(id);
-                auto const item = child_from_category(current_item, std::move(category));
-                setCurrentItem(item);
+                // utworzenie drzewa kategorii od nowa
+                update_content();
+                // nowo utworzona podkategoria zostaje automatycznie wybrana
+                if (auto item = child_with_id_for(root_, id); item) {
+                    expandItem(item->parent());
+                    setCurrentItem(item);
+                }
             }
         }
     }
@@ -213,6 +223,7 @@ edit_item() noexcept {
                 if (SQLite::instance().update(UpdateQuery, category.name(), category.id())) {
                     item->setText(0, category.qname());
                     item->parent()->sortChildren(0, Qt::AscendingOrder);
+
                 }
         }
 }
@@ -315,11 +326,32 @@ add_items_for(QTreeWidgetItem* const parent) noexcept {
 
 bool CategoryTree::
 already_exist(i64 const pid, std::string const& name) const noexcept {
+    store_->print();
+
     if (not store_->exist(pid, name))
-        return true;
+        return {};
 
     // Pod-kategoria o takiej nazwie już istnieje (w ramach aktualnej kategorii).
     auto msg = fmt::format("The subcategory '{}' already exists!", name);
     QMessageBox::warning(QApplication::activeWindow(), "Unacceptable category name", QString::fromStdString(msg));
-    return {};
+    return true;
+}
+
+QTreeWidgetItem* CategoryTree::item_with_id(i64 id) noexcept {
+    return child_with_id_for(root_, id);
+}
+
+QTreeWidgetItem* CategoryTree::child_with_id_for(QTreeWidgetItem* parent, i64 id) noexcept {
+    if (parent) {
+        if (parent->data(0, IdRole).toInt() == id)
+            return parent;
+
+        auto const child_count = parent->childCount();
+        for (auto i = 0; i < child_count; ++i) {
+            auto child = parent->child(i);
+            if (auto item = child_with_id_for(child, id); item)
+                return item;
+        }
+    }
+    return nullptr;
 }

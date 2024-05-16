@@ -28,7 +28,7 @@
 #include "MainWindow.h"
 #include "Settings.h"
 #include "NotesWorkspace.h"
-#include "CategoryTree.h"
+#include "CategoryTree.hh"
 #include <QApplication>
 #include <QSplitter>
 #include <fmt/core.h>
