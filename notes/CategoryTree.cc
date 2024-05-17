@@ -101,7 +101,8 @@ CategoryTree::CategoryTree(QWidget* const parent) :
 
 /// Utworzenie drzewa kategorii od nowa.
 /// Od nowa tzn. odczytujemy najpierw bazę danych kategorii.
-void CategoryTree::update_content() noexcept {
+void CategoryTree::
+update_content() noexcept {
     clear();
 
     delete store_;
@@ -120,7 +121,8 @@ void CategoryTree::update_content() noexcept {
 }
 
 /// Obsługa prawego klawisza myszu (menu kontekstowe)
-void CategoryTree::mousePressEvent(QMouseEvent* const event) {
+void CategoryTree::
+mousePressEvent(QMouseEvent* const event) {
     if (event->button() == Qt::RightButton) {
         auto const item = itemAt(event->pos());
         auto const main_item = (item == nullptr) or (item == root_);
@@ -149,7 +151,8 @@ void CategoryTree::mousePressEvent(QMouseEvent* const event) {
 }
 
 /// Dodanie nowej kategorii głównej,
-void CategoryTree::new_main_category() noexcept {
+void CategoryTree::
+new_main_category() noexcept {
     if (auto opt = category_dialog(Category{}); opt) {
         auto category = opt.value();
 
@@ -168,7 +171,8 @@ void CategoryTree::new_main_category() noexcept {
 }
 
 /// Dodanie nowej podkategorii do aktualnie wybranej w drzewie kategorii.
-void CategoryTree::new_subcategory() noexcept {
+void CategoryTree::
+new_subcategory() noexcept {
     // wyznaczenie aktualnie wybranej w drzewie kategorii.
     // to będzie tak zwany parent-item.
     QTreeWidgetItem* parent_item = currentItem();
@@ -195,9 +199,11 @@ void CategoryTree::new_subcategory() noexcept {
     }
 }
 
-// Usunięcie aktualnej kategorii.
-void CategoryTree::remove_category() noexcept {
+/// Usunięcie aktualnej kategorii.
+void CategoryTree::
+remove_category() noexcept {
     if (auto item = currentItem(); item) {
+        if (item == root_) return;
         auto category = category_from(item);
 
         // Jeśli kategoria zawiera pod-kategorje prosimy użytkownika
@@ -209,13 +215,24 @@ void CategoryTree::remove_category() noexcept {
         // TODO check if category contains notes
 
         if (auto ok = SQLite::instance().exec(DeleteQuery, category.id()); ok) {
-            item->parent()->removeChild(item);
-            delete item;
+            // Co by tu wybrać po usunięciu aktualnej kategorii?
+            i64 next_selected_id = 0;
+            // Spróbuj przesunąć się do góry
+            if (auto item_above = itemAbove(item); item_above && item_above != root_)
+                next_selected_id = item_above->data(0, IdRole).toInt();
+            // Jeśli nie można do góry, spróbuj przesunąć się w dół.
+            else if (auto item_below = itemBelow(item); item_below && item_below != root_)
+                next_selected_id = itemBelow(item)->data(0, IdRole).toInt();
+
+            auto expanded = expanded_items();
+            update_content();
+            expanded_items(std::move(expanded));
+            setCurrentItem(child_with_id_for(root_, next_selected_id));
         }
     }
 }
 
-// Edycja nazwy aktualnej kategorii.
+/// Edycja nazwy aktualnej kategorii.
 void CategoryTree::
 edit_item() noexcept {
     if (auto item = currentItem(); item) {
