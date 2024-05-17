@@ -99,8 +99,8 @@ CategoryTree::CategoryTree(QWidget* const parent) :
     setCurrentItem(root_);
 }
 
-// Utworzenie drzewa kategorii od nowa.
-// Od nowa tzn. odczytujemy najpierw bazę danych kategorii.
+/// Utworzenie drzewa kategorii od nowa.
+/// Od nowa tzn. odczytujemy najpierw bazę danych kategorii.
 void CategoryTree::update_content() noexcept {
     clear();
 
@@ -119,7 +119,7 @@ void CategoryTree::update_content() noexcept {
     root_->setExpanded(true);
 }
 
-// Handle mouse clicks.
+/// Obsługa prawego klawisza myszu (menu kontekstowe)
 void CategoryTree::mousePressEvent(QMouseEvent* const event) {
     if (event->button() == Qt::RightButton) {
         auto const item = itemAt(event->pos());
@@ -158,11 +158,10 @@ void CategoryTree::new_main_category() noexcept {
             // zapis podanej nazwy kategorii do bazy danych
             auto const id = SQLite::instance().insert(InsertQuery, category.pid(), category.name());
             if (id not_eq SQLite::InvalidRowid) {
-                // utworzenie drzewa kategorii od nowa
+                auto expanded = expanded_items();
                 update_content();
-                // nowo utworzona podkategoria zostaje automatycznie wybrana
-                if (auto item = child_with_id_for(root_, id); item)
-                    setCurrentItem(item);
+                expanded_items(std::move(expanded));
+                setCurrentItem(child_with_id_for(root_, id));
             }
         }
     }
@@ -182,9 +181,9 @@ void CategoryTree::new_subcategory() noexcept {
         if (not already_exist(category.pid(), category.name())) {
             auto const id = SQLite::instance().insert(InsertQuery, category.pid(), category.name());
             if (id not_eq SQLite::InvalidRowid) {
-                auto expands = expanded_items();
+                auto expanded = expanded_items();
                 update_content();
-                expanded_items(std::move(expands));
+                expanded_items(std::move(expanded));
 
                 // nowo utworzona podkategoria zostaje automatycznie wybrana
                 if (auto item = child_with_id_for(root_, id); item) {
@@ -216,21 +215,22 @@ void CategoryTree::remove_category() noexcept {
     }
 }
 
-// Edycja aktualnej kategorii.
+// Edycja nazwy aktualnej kategorii.
 void CategoryTree::
 edit_item() noexcept {
-    if (auto item = currentItem(); item)
+    if (auto item = currentItem(); item) {
         if (auto opt = category_dialog(category_from(item), true); opt) {
-            auto category = opt.value();
-            if (already_exist(category.pid(), category.name()))
+            auto category{*opt};
+            if (not already_exist(category.pid(), category.name())) {
                 if (SQLite::instance().update(UpdateQuery, category.name(), category.id())) {
                     auto expanded = expanded_items();
-
-                    item->setText(0, category.qname());
-                    item->parent()->sortChildren(0, Qt::AscendingOrder);
-
+                    update_content();
+                    expanded_items(std::move(expanded));
+                    setCurrentItem(child_with_id_for(root_, category.id()));
                 }
+            }
         }
+    }
 }
 
 QTreeWidgetItem* CategoryTree::
@@ -331,8 +331,6 @@ add_items_for(QTreeWidgetItem* const parent) noexcept {
 
 bool CategoryTree::
 already_exist(i64 const pid, std::string const& name) const noexcept {
-    store_->print();
-
     if (not store_->exist(pid, name))
         return {};
 
@@ -342,13 +340,10 @@ already_exist(i64 const pid, std::string const& name) const noexcept {
     return true;
 }
 
-QTreeWidgetItem* CategoryTree::item_with_id(i64 id) noexcept {
-    return child_with_id_for(root_, id);
-}
-
 /// Zwraca tree-item kategorii ze wskazanym numer ID.
 /// Lub nullptr jesli nie znaleziono.
-QTreeWidgetItem* CategoryTree::child_with_id_for(QTreeWidgetItem* parent, i64 id) noexcept {
+QTreeWidgetItem* CategoryTree::
+child_with_id_for(QTreeWidgetItem* parent, i64 id) noexcept {
     for (auto it = QTreeWidgetItemIterator{parent}; *it; ++it) {
         auto const item = *it;
         i64 const item_id = item->data(0, IdRole).toInt();
@@ -363,14 +358,10 @@ std::unordered_set<i64> CategoryTree::
 expanded_items() const noexcept {
     std::unordered_set<i64> ids{};
 
-    QTreeWidgetItemIterator it{root_};
-    while (*it) {
-        auto item = *it;
-        if (item->isExpanded()) {
-            i64 const id = item->data(0, IdRole).toInt();
-            ids.insert(id);
-        }
-        ++it;
+    for (auto it = QTreeWidgetItemIterator{root_}; *it; ++it) {
+        auto const item{*it};
+        if (item->isExpanded())
+            ids.insert(item->data(0, IdRole).toInt());
     }
 
     return ids;
@@ -383,12 +374,9 @@ expanded_items(std::unordered_set<i64>&& ids) noexcept {
     if (ids.empty())
         return;
 
-    QTreeWidgetItemIterator it{root_};
-    while (*it) {
-        auto item = *it;
-        i64 const id = item->data(0, IdRole).toInt();
-        if (ids.contains(id))
+    for (auto it = QTreeWidgetItemIterator{root_}; *it; ++it) {
+        auto const item{*it};
+        if (ids.contains(item->data(0, IdRole).toInt()))
             item->setExpanded(true);
-        ++it;
     }
 }
