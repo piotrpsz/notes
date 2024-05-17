@@ -42,6 +42,7 @@
 #include <QMessageBox>
 #include <QApplication>
 #include <QTreeWidgetItem>
+#include <QTreeWidgetItemIterator>
 #include <QDialogButtonBox>
 #include <memory>
 #include <string>
@@ -181,8 +182,10 @@ void CategoryTree::new_subcategory() noexcept {
         if (not already_exist(category.pid(), category.name())) {
             auto const id = SQLite::instance().insert(InsertQuery, category.pid(), category.name());
             if (id not_eq SQLite::InvalidRowid) {
-                // utworzenie drzewa kategorii od nowa
+                auto expands = expanded_items();
                 update_content();
+                expanded_items(std::move(expands));
+
                 // nowo utworzona podkategoria zostaje automatycznie wybrana
                 if (auto item = child_with_id_for(root_, id); item) {
                     expandItem(item->parent());
@@ -221,6 +224,8 @@ edit_item() noexcept {
             auto category = opt.value();
             if (already_exist(category.pid(), category.name()))
                 if (SQLite::instance().update(UpdateQuery, category.name(), category.id())) {
+                    auto expanded = expanded_items();
+
                     item->setText(0, category.qname());
                     item->parent()->sortChildren(0, Qt::AscendingOrder);
 
@@ -341,17 +346,49 @@ QTreeWidgetItem* CategoryTree::item_with_id(i64 id) noexcept {
     return child_with_id_for(root_, id);
 }
 
+/// Zwraca tree-item kategorii ze wskazanym numer ID.
+/// Lub nullptr jesli nie znaleziono.
 QTreeWidgetItem* CategoryTree::child_with_id_for(QTreeWidgetItem* parent, i64 id) noexcept {
-    if (parent) {
-        if (parent->data(0, IdRole).toInt() == id)
-            return parent;
-
-        auto const child_count = parent->childCount();
-        for (auto i = 0; i < child_count; ++i) {
-            auto child = parent->child(i);
-            if (auto item = child_with_id_for(child, id); item)
-                return item;
-        }
+    for (auto it = QTreeWidgetItemIterator{parent}; *it; ++it) {
+        auto const item = *it;
+        i64 const item_id = item->data(0, IdRole).toInt();
+        if (item_id == id)
+            return item;
     }
     return nullptr;
+}
+
+/// Zwraca wektor z numerami ID aktualnie rozwiniętych kategorii.
+std::unordered_set<i64> CategoryTree::
+expanded_items() const noexcept {
+    std::unordered_set<i64> ids{};
+
+    QTreeWidgetItemIterator it{root_};
+    while (*it) {
+        auto item = *it;
+        if (item->isExpanded()) {
+            i64 const id = item->data(0, IdRole).toInt();
+            ids.insert(id);
+        }
+        ++it;
+    }
+
+    return ids;
+}
+
+/// Rozwinicię kategorii których numery ID znajdują się
+/// we wskazanym zbiorze.
+void CategoryTree::
+expanded_items(std::unordered_set<i64>&& ids) noexcept {
+    if (ids.empty())
+        return;
+
+    QTreeWidgetItemIterator it{root_};
+    while (*it) {
+        auto item = *it;
+        i64 const id = item->data(0, IdRole).toInt();
+        if (ids.contains(id))
+            item->setExpanded(true);
+        ++it;
+    }
 }

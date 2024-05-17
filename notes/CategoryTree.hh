@@ -31,6 +31,7 @@
 #include "types.h"
 #include <QTreeWidget>
 #include <optional>
+#include <unordered_set>
 
 /*------- forward declarations:
 -------------------------------------------------------------------*/
@@ -60,6 +61,8 @@ private:
     QTreeWidgetItem* item_with_id(i64 id) noexcept;
     static QTreeWidgetItem* child_with_id_for(QTreeWidgetItem* parent, i64 id) noexcept;
     void update_content() noexcept;
+    [[nodiscard]] std::unordered_set<i64> expanded_items() const noexcept;
+    void expanded_items(std::unordered_set<i64>&& ids) noexcept;
 
 private slots:
     void new_subcategory() noexcept;
