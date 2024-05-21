@@ -250,18 +250,7 @@ edit_item() noexcept {
     }
 }
 
-QTreeWidgetItem* CategoryTree::
-child_from_category(QTreeWidgetItem* const parent, Category&& category) noexcept {
-    auto const item = new QTreeWidgetItem(parent);
-    item->setText(0, category.qname());
-    item->setData(0, IdRole, category.qid());
-    item->setData(0, PidRole, category.qpid());
-    // Ponieważ dodaliśmy nową pod-kategorię to kategorię-rodzica musimy posortować.
-    parent->sortChildren(0, Qt::AscendingOrder);
-    return item;
-}
-
-// Converts text and data of QTreeWidgetItem to Category.
+/// Konwersja danych tree-item na strukturę 'Category'.
 Category CategoryTree::
 category_from(QTreeWidgetItem const* const item) noexcept {
     Category category{};
@@ -274,7 +263,7 @@ category_from(QTreeWidgetItem const* const item) noexcept {
     return category;
 }
 
-// Run the dialog for category edition.
+/// Uruchomienie dialogu z edycją danych kategorii.
 std::optional<Category> CategoryTree::
 category_dialog(Category&& category, bool const rename) noexcept {
     auto const parent_layout = new QHBoxLayout;
@@ -345,13 +334,13 @@ add_items_for(QTreeWidgetItem* const parent) noexcept {
     });
 }
 
-
+/// Sprawdzenie czy kategoria już ma podkategorię o wskazanej nazwie.
 bool CategoryTree::
 already_exist(i64 const pid, std::string const& name) const noexcept {
     if (not store_->exist(pid, name))
         return {};
 
-    // Pod-kategoria o takiej nazwie już istnieje (w ramach aktualnej kategorii).
+    // Podkategoria o takiej nazwie już istnieje.
     auto msg = fmt::format("The subcategory '{}' already exists!", name);
     QMessageBox::warning(QApplication::activeWindow(), "Unacceptable category name", QString::fromStdString(msg));
     return true;
@@ -384,8 +373,7 @@ expanded_items() const noexcept {
     return ids;
 }
 
-/// Rozwinicię kategorii których numery ID znajdują się
-/// we wskazanym zbiorze.
+/// Rozwinicię kategorii których numery ID znajdują się we wskazanym zbiorze.
 void CategoryTree::
 expanded_items(std::unordered_set<i64>&& ids) noexcept {
     if (ids.empty())

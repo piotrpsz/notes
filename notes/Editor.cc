@@ -25,7 +25,7 @@
 
 /*------- include files:
 -------------------------------------------------------------------*/
-#include "Editor.h"
+#include "Editor.hh"
 #include "../common/EventController.hh"
 #include <QFont>
 #include <QKeyEvent>

@@ -26,9 +26,15 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include "NoteWidget.h"
+#include "Browser.hh"
+#include <QVBoxLayout>
 
 NoteWidget::NoteWidget(QWidget* const parent) :
         QWidget(parent)
 {
+    auto const main_layout{new QVBoxLayout};
+    main_layout->setContentsMargins(0, 0, 0, 0);
+    main_layout->addWidget(new Browser);
+    setLayout(main_layout);
 
 }

@@ -56,9 +56,7 @@ private:
     static std::optional<Category> category_dialog(Category&& category, bool rename = false) noexcept;
     void add_items_for(QTreeWidgetItem* item) noexcept;
     static Category category_from(QTreeWidgetItem const*) noexcept;
-    static QTreeWidgetItem* child_from_category(QTreeWidgetItem*, Category&&) noexcept;
     [[nodiscard]] bool already_exist(i64 pid, std::string const& name) const noexcept;
-//    QTreeWidgetItem* item_with_id(i64 id) noexcept;
     static QTreeWidgetItem* child_with_id_for(QTreeWidgetItem* parent, i64 id) noexcept;
     void update_content() noexcept;
     [[nodiscard]] std::unordered_set<i64> expanded_items() const noexcept;

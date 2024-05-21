@@ -25,7 +25,7 @@
 
 /*------- include files:
 -------------------------------------------------------------------*/
-#include "MainWindow.h"
+#include "MainWindow.hh"
 #include "Settings.h"
 #include "NotesWorkspace.h"
 #include "CategoryTree.hh"

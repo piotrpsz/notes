@@ -27,7 +27,7 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include <QDialog>
-#include "types.h"
+#include "../shared.hh"
 #include "../model/note.hh"
 #include <optional>
 
@@ -45,13 +45,23 @@ public:
 
     QVBoxLayout* editor_layout() noexcept;
 
+    template<std::integral T>
+    T note_id() const noexcept {
+        return static_cast<T>(note_id_);
+    }
+    template<std::integral T>
+    T category_id() const noexcept {
+        return static_cast<T>(category_id_);
+    }
+
+
 private:
     void showEvent(QShowEvent*) override;
-    void save_note(qint64 category_id, qstr const& title, qstr const& description, qstr const& content) const noexcept;
 
     QLineEdit* const title_;
     QLineEdit* const description_;
     Editor* const editor_;
-    qint64 category_id_;
+    qi64 category_id_;
     std::optional<Note> note_;
+    i64 note_id_{};
 };

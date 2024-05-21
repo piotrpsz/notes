@@ -30,11 +30,20 @@ public:
     static std::optional<Note> with_id(i64 id, std::string const& fields = "*") noexcept;
     static std::vector<Note> notes(std::vector<i64> ids) noexcept;
 
-    [[nodiscard]] i64 id() const noexcept { return id_; }
-    [[nodiscard]] i64 pid() const noexcept { return pid_; }
     [[nodiscard]] QString qtitle() const noexcept { return QString::fromStdString(title_); }
     [[nodiscard]] QString qdescription() const noexcept { return QString::fromStdString(description_); }
     [[nodiscard]] QString qcontent() const noexcept { return QString::fromStdString(content_); }
+
+    template<std::integral T>
+    T id() const noexcept {
+        return static_cast<T>(id_);
+    }
+
+    template<std::integral T>
+    T pid() const noexcept {
+        return static_cast<T>(pid_);
+    }
+
     Note& pid(qi64 const value) noexcept {
         pid_ = value;
         return *this;
@@ -68,6 +77,9 @@ public:
                     created DATETIME,
                     updated DATETIME
                 );)"
+            },
+            {
+                    R"(CREATE UNIQUE INDEX note_pid_index ON note(pid, title, description);)"
             },
             {
             R"(

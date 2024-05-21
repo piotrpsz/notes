@@ -24,7 +24,7 @@
 //
 
 #include "EditDialog.hh"
-#include "Editor.h"
+#include "Editor.hh"
 #include "../common/EventController.hh"
 #include <QIcon>
 #include <QFrame>
@@ -65,8 +65,11 @@ EditDialog::EditDialog(qi64 const category_id, std::optional<Note> note, QWidget
                 .title(title_->text())
                 .description(description_->text())
                 .content(editor_->toHtml());
-        if (not note.save())
-            QMessageBox::critical(this, "Error", "Nie udało się zapisać");
+        if (auto ok = note.save(); not ok)
+            QMessageBox::critical(this, "Error", "Error writing to database.");
+        else {
+            note_id_ = note.id<i64>();
+        }
         accept();
     });
     auto const cancel_button = buttons->button(QDialogButtonBox::Cancel);
@@ -137,9 +140,4 @@ QVBoxLayout* EditDialog::editor_layout() noexcept {
     layout->addWidget(toolbar);
     layout->addWidget(editor_);
     return layout;
-}
-
-void EditDialog::
-save_note(qint64 const category_id, qstr const& title, qstr const& description, qstr const& content) const noexcept {
-
 }

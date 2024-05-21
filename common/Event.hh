@@ -65,8 +65,7 @@ namespace event {
         CutRequest,
         PasteRequest,
 
-        NoteAdded,
+        NoteDatabaseChanged,
         NoteSelected,
-        NoteRemoved,
     };
 }

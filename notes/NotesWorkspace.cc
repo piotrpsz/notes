@@ -90,6 +90,8 @@ void NotesWorkspace::customEvent(QEvent* const event) {
 
 void NotesWorkspace::new_note(qi64 const category_id) noexcept {
     auto dialog = std::make_unique<EditDialog>(category_id);
-
-    dialog->exec();
+    if (dialog->exec() == QDialog::Accepted) {
+        std::integral auto note_id = dialog->note_id<qi64>();
+        EventController::instance().send(event::NoteDatabaseChanged, category_id, note_id);
+    }
 }

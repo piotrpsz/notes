@@ -43,9 +43,18 @@ NotesTable::NotesTable(QWidget* const parent) :
 
     setHorizontalHeaderItem(0, new QTableWidgetItem("Title"));
     setHorizontalHeaderItem(1, new QTableWidgetItem("Description"));
-    horizontalHeader()->setStretchLastSection(true);
+//    horizontalHeader()->setStretchLastSection(false);
 
-    EventController::instance().append(this, event::CategorySelected);
+    EventController::instance().append(this,
+                                       event::CategorySelected,
+                                       event::NoteDatabaseChanged);
+
+    connect(this, &QTableWidget::itemSelectionChanged, [&]{
+        if (auto current_item = item(currentRow(), 0); current_item) {
+            auto noteID = current_item->data(NoteID).toInt();
+            EventController::instance().send(event::NoteSelected, noteID);
+        }
+    });
 }
 
 void NotesTable::customEvent(QEvent* const event) {
@@ -55,18 +64,28 @@ void NotesTable::customEvent(QEvent* const event) {
             if (auto data = e->data(); not data.empty()) {
                 if (auto value = data[0]; value.canConvert<int>()) {
                     update_content_for(value.toInt());
+                    auto m = model();
+                    selectRow(0);
                 }
             }
             break;
+        case event::NoteDatabaseChanged:
+            if (auto data = e->data(); data.size() == 2) {
+                update_content_for(data[0].toInt());
+                auto noteID = data[1].toInt();
+                if (auto item = row_with_id(noteID); item)
+                    setCurrentItem(item);
+            }
+
     }
 }
 
 
-void NotesTable::update_content_for(i64 const id) noexcept {
+void NotesTable::update_content_for(i64 const category_id) noexcept {
     setRowCount(0);
     setColumnCount(2);
 
-    if (auto ids = Category::ids_subchain_for(id); not ids.empty()) {
+    if (auto ids = Category::ids_subchain_for(category_id); not ids.empty()) {
         if (auto notes = Note::notes(std::move(ids)); not notes.empty()) {
             setRowCount(int(notes.size()));
             auto row = 0;
@@ -74,11 +93,26 @@ void NotesTable::update_content_for(i64 const id) noexcept {
                 auto const item0 = new QTableWidgetItem(note.qtitle());
                 auto const item1 = new QTableWidgetItem(note.qdescription());
                 setItem(row, 0, item0);
+                item0->setData(NoteID, note.id<qi64>());
+                item0->setData(CategoryID, note.pid<qi64>());
+
                 setItem(row, 1, item1);
                 ++row;
             }
         }
     }
-
+    horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
     update();
+}
+
+QTableWidgetItem* NotesTable::
+row_with_id(qint64 id) const noexcept {
+    int const rows = model()->rowCount();
+    for (int i = 0; i < rows; ++i) {
+        auto const row = item(i, 0);
+        if (row->data(NoteID).toInt() == id)
+            return row;
+    }
+    return nullptr;
 }

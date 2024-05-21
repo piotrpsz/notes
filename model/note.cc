@@ -24,7 +24,7 @@ Note::Note(Row &&row) {
 
 std::optional<Note> Note::
 with_id(i64 const id, std::string const &fields) noexcept {
-    auto cmd = fmt::format("SELECT {} FROM category WHERE id=?", fields);
+    auto cmd = fmt::format("SELECT {} FROM note WHERE id=?", fields);
     if (auto result = SQLite::instance().select(cmd, id); result)
         if (auto data = result.value(); not data.empty())
             return Note(data[0]);

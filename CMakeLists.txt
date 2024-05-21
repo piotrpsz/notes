@@ -45,7 +45,7 @@ add_executable(notes main.cc
         model/note.cc
         model/note.hh
         notes/MainWindow.cc
-        notes/MainWindow.h
+        notes/MainWindow.hh
         notes/Settings.h
         notes/types.h
         notes/CategoryTree.cc
@@ -66,9 +66,11 @@ add_executable(notes main.cc
         notes/EditDialog.cc
         notes/EditDialog.hh
         notes/Editor.cc
-        notes/Editor.h
+        notes/Editor.hh
         model/StoreCategory.cc
         model/StoreCategory.hh
+        notes/Browser.cc
+        notes/Browser.hh
 )
 target_link_libraries(notes
         Qt::Core Qt::Gui Qt::Widgets

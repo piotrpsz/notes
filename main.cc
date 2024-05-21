@@ -28,7 +28,7 @@
 #include "model/category.hh"
 #include "model/note.hh"
 #include "sqlite/sqlite.hh"
-#include "notes/MainWindow.h"
+#include "notes/MainWindow.hh"
 #include <QApplication>
 #include <fmt/core.h>
 #include <string>
