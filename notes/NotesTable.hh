@@ -47,6 +47,8 @@ private:
     /// \param event - zdarzenie
     void customEvent(QEvent* event) override;
 
+    void delete_note(qi64 noteID) noexcept;
+
     /// Uaktualnienie tabeli notatek dla wskazanej kategorii.
     /// \param id - numer ID kategorii, której notatki mają być wyświetlone.
     void update_content_for(i64 id) noexcept;

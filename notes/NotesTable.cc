@@ -26,10 +26,12 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include "NotesTable.hh"
+#include "DeleteNoteDialog.hh"
 #include "../model/note.hh"
 #include "../model/category.hh"
 #include "../common/EventController.hh"
 #include <QTableWidgetItem>
+#include <QDialog>
 #include <QHeaderView>
 #include <fmt/core.h>
 
@@ -47,12 +49,19 @@ NotesTable::NotesTable(QWidget* const parent) :
 
     EventController::instance().append(this,
                                        event::CategorySelected,
+                                       event::RemoveCurrentNoteRequest,
                                        event::NoteDatabaseChanged);
 
     connect(this, &QTableWidget::itemSelectionChanged, [&]{
         if (auto current_item = item(currentRow(), 0); current_item) {
             auto noteID = current_item->data(NoteID).toInt();
             EventController::instance().send(event::NoteSelected, noteID);
+        }
+    });
+    connect(this, &QTableWidget::cellDoubleClicked, [&] (auto row, auto col){
+        if (auto selected_item = item(row, 0); selected_item) {
+            auto noteID = selected_item->data(NoteID).toInt();
+            EventController::instance().send(event::EditNoteRequest, noteID);
         }
     });
 }
@@ -76,12 +85,19 @@ void NotesTable::customEvent(QEvent* const event) {
                 if (auto item = row_with_id(noteID); item)
                     setCurrentItem(item);
             }
-
+            break;
+        case event::RemoveCurrentNoteRequest:
+            if (auto current_item = item(currentRow(), 0); current_item) {
+                auto noteID = current_item->data(NoteID).toInt();
+                delete_note(noteID);
+            }
+            break;
     }
 }
 
 
-void NotesTable::update_content_for(i64 const category_id) noexcept {
+void NotesTable::
+update_content_for(i64 const category_id) noexcept {
     setRowCount(0);
     setColumnCount(2);
 
@@ -115,4 +131,13 @@ row_with_id(qint64 id) const noexcept {
             return row;
     }
     return nullptr;
+}
+
+void NotesTable::
+delete_note(qi64 const noteID) noexcept {
+    auto dialog = std::make_unique<DeleteNoteDialog>(noteID, this);
+
+    if (dialog->exec() == QDialog::Accepted) {
+
+    }
 }

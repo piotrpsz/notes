@@ -71,6 +71,8 @@ add_executable(notes main.cc
         model/StoreCategory.hh
         notes/Browser.cc
         notes/Browser.hh
+        notes/DeleteNoteDialog.cc
+        notes/DeleteNoteDialog.hh
 )
 target_link_libraries(notes
         Qt::Core Qt::Gui Qt::Widgets

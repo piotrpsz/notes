@@ -47,7 +47,7 @@ bool Note::
 update() noexcept {
     using namespace std::string_literals;
     auto cmd{"UPDATE note SET title=?, description=?, content=? WHERE id=?"s};
-    return SQLite::instance().update(cmd, title_, description_, content_);
+    return SQLite::instance().update(cmd, title_, description_, content_, id_);
 }
 
 // Odczyt z bazy danych notatek których numery ID są podane jako argument w wektorze 'ids'.

@@ -39,11 +39,27 @@ class QVBoxLayout;
 
 class EditDialog : public QDialog {
     Q_OBJECT
+private:
+    void showEvent(QShowEvent*) override;
+
+    QLineEdit* const title_;
+    QLineEdit* const description_;
+    Editor* const editor_;
+    qi64 category_id_{};
+    std::optional<Note> note_{};
+    i64 note_id_{};
+
 public:
-    explicit EditDialog(qi64 category_id, std::optional<Note> note = {}, QWidget* = nullptr);
+    explicit EditDialog(qi64 category_id, QWidget* = nullptr);
+    explicit EditDialog(Note&& note, QWidget* = nullptr);
+
     ~EditDialog() override = default;
 
     QVBoxLayout* editor_layout() noexcept;
+
+    Note get_note() {
+        return std::move(note_.value());
+    }
 
     template<std::integral T>
     T note_id() const noexcept {
@@ -55,13 +71,5 @@ public:
     }
 
 
-private:
-    void showEvent(QShowEvent*) override;
 
-    QLineEdit* const title_;
-    QLineEdit* const description_;
-    Editor* const editor_;
-    qi64 category_id_;
-    std::optional<Note> note_;
-    i64 note_id_{};
 };

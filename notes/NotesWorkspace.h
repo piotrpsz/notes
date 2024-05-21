@@ -46,7 +46,8 @@ public:
 private:
     void showEvent(QShowEvent*) override;
     void customEvent(QEvent*) override;
-    static void new_note(qi64 category_id) noexcept;
+    static void new_note(qi64 categoryID) noexcept;
+    static void edit_note(qi64 noteID) noexcept;
 
     bool first_show_{true};
     static inline qstr const SizesH0Key = "NotesWorkspace/Sizes/H0";

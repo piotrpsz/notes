@@ -56,7 +56,7 @@ NotesTableToolbar::NotesTableToolbar(QWidget* const parent) :
         EventController::instance().send(event::EditNoteRequest);
     });
     connect(del_action, &QAction::triggered, []() {
-        EventController::instance().send(event::RemoveNoteRequest);
+        EventController::instance().send(event::RemoveCurrentNoteRequest);
     });
 
     EventController::instance().append(this, event::CategorySelected);

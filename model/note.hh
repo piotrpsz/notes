@@ -21,12 +21,12 @@ class Note {
 public:
     Note() = default;
     explicit Note(Row&& row);
-//    Note(qint64 pid, qstr&& title, qstr&& description, qstr&& content) :
-//        pid_{pid},
-//        title_{title.toStdString()},
-//        description_{description.toStdString()},
-//        content_{content.toStdString()}
-//    {}
+    Note(Note&&) = default;
+    Note& operator=(Note&&) = default;
+    Note(Note const&) = default;
+    Note& operator=(Note const&) = default;
+    ~Note() = default;
+
     static std::optional<Note> with_id(i64 id, std::string const& fields = "*") noexcept;
     static std::vector<Note> notes(std::vector<i64> ids) noexcept;
 
@@ -38,7 +38,6 @@ public:
     T id() const noexcept {
         return static_cast<T>(id_);
     }
-
     template<std::integral T>
     T pid() const noexcept {
         return static_cast<T>(pid_);

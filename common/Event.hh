@@ -58,6 +58,7 @@ namespace event {
         NewNoteRequest,
         EditNoteRequest,
         RemoveNoteRequest,
+        RemoveCurrentNoteRequest,
 
         SelectFontRequest,
         SelectColorRequest,

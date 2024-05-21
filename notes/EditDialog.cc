@@ -39,18 +39,69 @@
 #include <QDialogButtonBox>
 #include <fmt/core.h>
 
-EditDialog::EditDialog(qi64 const category_id, std::optional<Note> note, QWidget* const parent) :
+EditDialog::EditDialog(Note&& note, QWidget* const parent) :
+        QDialog(parent),
+        note_{std::move(note)},
+        title_{new QLineEdit},
+        description_{new QLineEdit},
+        editor_{new Editor}
+{
+    title_->setText(note_.value().qtitle());
+    description_->setText(note_.value().qdescription());
+    editor_->setHtml(note_.value().qcontent());
+
+    setWindowTitle("Edit note");
+    setSizeGripEnabled(true);
+
+    auto const separator{new QFrame};
+    separator->setFrameShape(QFrame::HLine);
+    separator->setFrameShadow(QFrame::Sunken);
+
+    auto const buttons{new QDialogButtonBox(QDialogButtonBox::Apply | QDialogButtonBox::Cancel)};
+    auto const apply_button = buttons->button(QDialogButtonBox::Apply);
+    auto const cancel_button = buttons->button(QDialogButtonBox::Cancel);
+
+    auto layout = new QGridLayout;
+    layout->addWidget(new QLabel("Tilte"), 0, 0);
+    layout->addWidget(title_, 0, 1);
+    layout->addWidget(new QLabel("Description"), 1, 0);
+    layout->addWidget(description_, 1, 1);
+    layout->addWidget(separator, 2, 0, 1, 2);
+    layout->addLayout(editor_layout(), 3, 0, 1, 2);
+    layout->addWidget(buttons, 4, 0, 1, 2);
+    setLayout(layout);
+
+    connect(apply_button, &QPushButton::clicked, [&]() {
+        auto new_note = std::move(*note_);
+        new_note.title(title_->text());
+        new_note.description((description_->text()));
+        new_note.content(editor_->toHtml());
+        note_ = std::move(new_note);
+
+        if (auto ok = note_.value().save(); not ok) {
+            // Jesli zapis do bazy był nie udany, to dajemy użytkownikowi
+            // możliwość dalszej edycji.
+            QMessageBox::critical(this, "Error", "Error writing to database.");
+            return;
+        }
+        accept();
+    });
+
+    connect(cancel_button, &QPushButton::clicked, [this]() {
+        reject();
+    });
+}
+
+/// Nowa notatka dla wskazanej kategorii.
+EditDialog::EditDialog(qi64 const category_id, QWidget* const parent) :
     QDialog(parent),
     title_{new QLineEdit},
     description_{new QLineEdit},
     editor_{new Editor},
-    category_id_{category_id},
-    note_{std::move(note)}
+    category_id_{category_id}
 {
-    fmt::print("category id: {}\n", category_id);
-    setWindowTitle("Note");
+    setWindowTitle("New note");
     setSizeGripEnabled(true);
-
 
     auto const separator{new QFrame};
     separator->setFrameShape(QFrame::HLine);
