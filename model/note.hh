@@ -27,6 +27,7 @@ public:
     Note& operator=(Note const&) = default;
     ~Note() = default;
 
+    static bool remove(i64 id) noexcept;
     static std::optional<Note> with_id(i64 id, std::string const& fields = "*") noexcept;
     static std::vector<Note> notes(std::vector<i64> ids) noexcept;
 

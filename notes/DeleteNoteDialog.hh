@@ -8,8 +8,10 @@
 #include <QDialog>
 #include "../shared.hh"
 
+class Note;
+
 class DeleteNoteDialog : public QDialog {
 public:
-    DeleteNoteDialog(qi64 noteID, QWidget* = nullptr);
+    explicit DeleteNoteDialog(Note const& note, QWidget* = nullptr);
     ~DeleteNoteDialog() override = default;
 };

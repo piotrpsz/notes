@@ -95,11 +95,12 @@ void NotesTable::customEvent(QEvent* const event) {
     }
 }
 
-
+/// Wyświetlamy wszystkie notatki dla wskazanej kategorii
+/// oraz wszystkich jej podkategorii (jeśli istnieją).
 void NotesTable::
 update_content_for(i64 const category_id) noexcept {
-    setRowCount(0);
-    setColumnCount(2);
+    // Usunięcie wszystkich wierszy w tabeli.
+    clearContents();
 
     if (auto ids = Category::ids_subchain_for(category_id); not ids.empty()) {
         if (auto notes = Note::notes(std::move(ids)); not notes.empty()) {
@@ -107,18 +108,21 @@ update_content_for(i64 const category_id) noexcept {
             auto row = 0;
             for (auto const& note : notes) {
                 auto const item0 = new QTableWidgetItem(note.qtitle());
-                auto const item1 = new QTableWidgetItem(note.qdescription());
                 setItem(row, 0, item0);
                 item0->setData(NoteID, note.id<qi64>());
                 item0->setData(CategoryID, note.pid<qi64>());
 
+                auto const item1 = new QTableWidgetItem(note.qdescription());
                 setItem(row, 1, item1);
                 ++row;
             }
         }
     }
     horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-    horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
+    resizeColumnToContents(1);
+//    horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
+    categoryID_ = category_id;
+
     update();
 }
 
@@ -135,9 +139,20 @@ row_with_id(qint64 id) const noexcept {
 
 void NotesTable::
 delete_note(qi64 const noteID) noexcept {
-    auto dialog = std::make_unique<DeleteNoteDialog>(noteID, this);
-
-    if (dialog->exec() == QDialog::Accepted) {
-
+    if (auto note = Note::with_id(noteID); note) {
+        auto dialog = std::make_unique<DeleteNoteDialog>(*note, this);
+        if (dialog->exec() == QDialog::Accepted) {
+            auto row_nr = currentRow();
+            if (Note::remove(noteID)) {
+                update_content_for(categoryID_);
+                // Wybieramy wiersz o takim samym indeksie jeśli jest taki.
+                // Lub ostatni wiersz.
+                if (row_nr >= rowCount())
+                    row_nr = rowCount() - 1;
+                selectRow(row_nr);
+            }
+        }
     }
 }
+
+

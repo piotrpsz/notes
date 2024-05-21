@@ -32,9 +32,11 @@
 #include <QApplication>
 #include <mutex>
 
+static std::mutex mutex_;
+
 class EventController : public QObject {
     using EventStore = QHash<int, QSet<QObject*>>;
-    std::mutex mutex_;
+
     EventStore store_{};
 public:
     static EventController& instance() noexcept {
@@ -85,11 +87,11 @@ public:
 
         if (store_.contains(id)) {
             auto const& subsribers = store_[id];
-            for (auto const receiver : subsribers)
+            for (auto const& receiver : subsribers)
                 QApplication::postEvent(receiver, new Event(id, args...));
         }
     }
 
 private:
-    EventController() : QObject() {}
+    EventController();
 };

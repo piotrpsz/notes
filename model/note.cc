@@ -22,6 +22,11 @@ Note::Note(Row &&row) {
         content_ = (*f).value().str();
 }
 
+bool Note::
+remove(i64 const id) noexcept {
+    return SQLite::instance().exec("DELETE FROM note WHERE id=?", id);
+}
+
 std::optional<Note> Note::
 with_id(i64 const id, std::string const &fields) noexcept {
     auto cmd = fmt::format("SELECT {} FROM note WHERE id=?", fields);

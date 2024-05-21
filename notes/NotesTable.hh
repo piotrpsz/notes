@@ -39,6 +39,7 @@ class QTableWidgetItem;
 class NotesTable : public QTableWidget {
     Q_OBJECT
     enum { NoteID = Qt::UserRole+1, CategoryID};
+    i64 categoryID_{};
 public:
     explicit NotesTable(QWidget* = nullptr);
     ~NotesTable() override = default;
@@ -53,5 +54,5 @@ private:
     /// \param id - numer ID kategorii, której notatki mają być wyświetlone.
     void update_content_for(i64 id) noexcept;
 
-    QTableWidgetItem* row_with_id(qint64 id) const noexcept;
+    [[nodiscard]] QTableWidgetItem* row_with_id(qint64 id) const noexcept;
 };

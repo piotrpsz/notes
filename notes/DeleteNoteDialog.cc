@@ -3,12 +3,13 @@
 //
 
 #include "DeleteNoteDialog.hh"
+#include "../model/note.hh"
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QLabel>
 
-DeleteNoteDialog::DeleteNoteDialog(qi64 noteID, QWidget *const parent) :
+DeleteNoteDialog::DeleteNoteDialog(Note const& note, QWidget *const parent) :
         QDialog(parent)
 {
     setWindowTitle("Remove Note");
