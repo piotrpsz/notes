@@ -6,7 +6,7 @@
 #include "../shared.hh"
 #include "../common/Datime.hh"
 #include "../sqlite/sqlite.hh"
-#include "../notes/types.h"
+#include "../notes/types.hh"
 #include <QString>
 #include <string>
 #include <vector>

@@ -27,7 +27,7 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include <QMainWindow>
-#include "types.h"
+#include "../shared.hh"
 
 /*------- forward declarations:
 -------------------------------------------------------------------*/
@@ -55,5 +55,4 @@ private:
     static inline qstr const MainWindowPosKey = "MainWindow/Position";
     static inline qstr const MainWindowStateKey = "MainWindow/State";
     static inline qstr const MainWindowW0Key = "MainWindow/Sizes/W0";
-    static inline qstr const MainWindowW1Key = "MainWindow/Sizes/W1";
 };

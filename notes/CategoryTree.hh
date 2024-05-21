@@ -28,7 +28,7 @@
 -------------------------------------------------------------------*/
 #include "../shared.hh"
 #include "../model/StoreCategory.hh"
-#include "types.h"
+#include "types.hh"
 #include <QTreeWidget>
 #include <optional>
 #include <unordered_set>

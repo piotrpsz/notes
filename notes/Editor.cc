@@ -48,9 +48,11 @@ Editor::Editor(QWidget* const parent) :
     QFont font;
     font.setFamily("Menlo");
     font.setKerning(true);
-//    font.setFixedPitch(true);
-    font.setPointSize(10);
+    font.setPointSize(11);
     setFont(font);
+
+    // ustawinie długości TAB
+    setTabStopDistance(5 * fontMetrics().horizontalAdvance('-') - 2.0);
 
 
     EventController::instance().append(this,
@@ -59,6 +61,10 @@ Editor::Editor(QWidget* const parent) :
                                        event::PasteRequest,
                                        event::SelectColorRequest,
                                        event::SelectFontRequest);
+}
+
+Editor::~Editor() {
+    EventController::instance().remove(this);
 }
 
 void Editor::customEvent(QEvent* const event) {

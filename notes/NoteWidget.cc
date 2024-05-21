@@ -25,7 +25,7 @@
 
 /*------- include files:
 -------------------------------------------------------------------*/
-#include "NoteWidget.h"
+#include "NoteWidget.hh"
 #include "Browser.hh"
 #include <QVBoxLayout>
 

@@ -15,7 +15,7 @@ class Browser : public QTextEdit {
     Q_OBJECT
 public:
     explicit Browser(QWidget* = nullptr);
-    ~Browser() override = default;
+    ~Browser() override;
 
 private:
     void customEvent(QEvent*) override;

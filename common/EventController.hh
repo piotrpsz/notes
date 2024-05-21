@@ -32,11 +32,9 @@
 #include <QApplication>
 #include <mutex>
 
-static std::mutex mutex_;
-
 class EventController : public QObject {
     using EventStore = QHash<int, QSet<QObject*>>;
-
+    std::mutex mutex_;
     EventStore store_{};
 public:
     static EventController& instance() noexcept {

@@ -2,8 +2,8 @@
 // Created by piotr on 27.04.24.
 //
 
-#include "NotesTableWidget.h"
-#include "NotesTableToolbar.h"
+#include "NotesTableWidget.hh"
+#include "NotesTableToolbar.hh"
 #include "NotesTable.hh"
 #include <QVBoxLayout>
 

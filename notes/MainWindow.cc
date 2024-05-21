@@ -26,8 +26,8 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include "MainWindow.hh"
-#include "Settings.h"
-#include "NotesWorkspace.h"
+#include "Settings.hh"
+#include "NotesWorkspace.hh"
 #include "CategoryTree.hh"
 #include <QApplication>
 #include <QSplitter>
@@ -48,41 +48,48 @@ MainWindow::MainWindow(QWidget *const parent) :
     setCentralWidget(splitter_);
 }
 
+/// Wyświetlenie okna programu - odczyt i zastosowanie zapamiętanej
+/// geometrii okna z poprzedniego uruchomienia programu.
 void MainWindow::showEvent(QShowEvent *const event) {
-    QMainWindow::showEvent(event);
     if (not first_show_) return;
 
     first_show_ = false;
     Settings sts;
 
+    // Odtwórz rozmiar okna
     if (auto data = sts.read(MainWindowSizeKey); data)
         resize(data.value().toSize());
+    // jego pozycję
     if (auto data = sts.read(MainWindowPosKey); data)
         move(data.value().toPoint());
+    // i stan.
     if (auto data = sts.read(MainWindowStateKey); data)
         restoreState(data.value().toByteArray());
 
-    auto const s = size();
-    auto w0 = int(20. * s.width() / 100.);
-    auto w1 = int(s.width() - w0 - splitter_->handleWidth());
-
-    if (auto data = sts.read(MainWindowW0Key); data)
-        w0 = data.value().toInt();
-    if (auto data = sts.read(MainWindowW1Key); data)
-        w1 = data.value().toInt();
-
-    splitter_->setSizes({w0, w1});
+    // Ustaw proporcje splittera.
+    auto const width = size().width();
+    if (auto data = sts.read(MainWindowW0Key); data) {
+        auto const w0 = (*data).toDouble() * width / 100.;
+        auto const w1 = width - splitter_->handleWidth() - w0;
+        splitter_->setSizes({static_cast<int>(w0), static_cast<int>(w1)});
+    } else {
+        auto const w0 = 20. * width / 100.;
+        auto const w1 = width - splitter_->handleWidth() - w0;
+        splitter_->setSizes({static_cast<int>(w0), static_cast<int>(w1)});
+    }
 }
 
+/// Zamknięcie okna - zapamiętanie geometrii okna programu.
 void MainWindow::closeEvent(QCloseEvent *const event) {
     Settings sts;
+
+    // Zapisz stan okna, jego pozycję i rozmiar.
     sts.save(MainWindowStateKey, saveState());
     sts.save(MainWindowPosKey, pos());
     sts.save(MainWindowSizeKey, size());
 
-    auto data = splitter_->sizes();
-    sts.save(MainWindowW0Key, data[0]);
-    sts.save(MainWindowW1Key, data[1]);
-
-    QMainWindow::closeEvent(event);
+    // Zapisz propocje komponentów splittera.
+    auto const width{size().width()};
+    auto const data{splitter_->sizes()};
+    sts.save(MainWindowW0Key, double(data[0] * 100. / width));
 }

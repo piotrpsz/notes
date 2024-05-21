@@ -46,23 +46,24 @@ add_executable(notes main.cc
         model/note.hh
         notes/MainWindow.cc
         notes/MainWindow.hh
-        notes/Settings.h
-        notes/types.h
+        notes/Settings.hh
+        notes/types.hh
         notes/CategoryTree.cc
         notes/CategoryTree.hh
         notes/NotesWorkspace.cc
-        notes/NotesWorkspace.h
+        notes/NotesWorkspace.hh
         notes/NotesTable.cc
         notes/NotesTable.hh
         notes/NoteWidget.cc
-        notes/NoteWidget.h
+        notes/NoteWidget.hh
         common/Event.hh
         common/EventController.hh
         common/Datime.hh
         notes/NotesTableWidget.cc
-        notes/NotesTableWidget.h
+
+        notes/NotesTableWidget.hh
         notes/NotesTableToolbar.cc
-        notes/NotesTableToolbar.h
+        notes/NotesTableToolbar.hh
         notes/EditDialog.cc
         notes/EditDialog.hh
         notes/Editor.cc

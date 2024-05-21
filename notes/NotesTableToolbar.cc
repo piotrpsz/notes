@@ -14,7 +14,7 @@
 // Created by piotr on 27.04.24.
 //
 
-#include "NotesTableToolbar.h"
+#include "NotesTableToolbar.hh"
 #include "../common/EventController.hh"
 #include "../model/category.hh"
 #include <QAction>

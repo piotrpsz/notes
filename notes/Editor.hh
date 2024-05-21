@@ -39,7 +39,7 @@ class Editor : public QTextEdit {
     Q_OBJECT
 public:
     explicit Editor(QWidget* = nullptr);
-    ~Editor() override = default;
+    ~Editor() override;
 private:
     void customEvent(QEvent*) override;
     void keyPressEvent(QKeyEvent*) override;

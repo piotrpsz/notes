@@ -25,10 +25,10 @@
 
 /*------- include files:
 -------------------------------------------------------------------*/
-#include "NotesWorkspace.h"
-#include "NotesTableWidget.h"
-#include "NoteWidget.h"
-#include "Settings.h"
+#include "NotesWorkspace.hh"
+#include "NotesTableWidget.hh"
+#include "NoteWidget.hh"
+#include "Settings.hh"
 #include "../common/EventController.hh"
 #include "EditDialog.hh"
 #include <QVariant>

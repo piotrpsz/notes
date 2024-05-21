@@ -26,7 +26,7 @@
 
 /*------- include files:
 -------------------------------------------------------------------*/
-#include "types.h"
+#include "types.hh"
 #include <QSplitter>
 
 /*------- forward declarations:

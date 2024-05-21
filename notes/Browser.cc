@@ -13,7 +13,20 @@
 Browser::Browser(QWidget* const parent) : QTextEdit(parent) {
     setAcceptRichText(true);
     setReadOnly(true);
+
+    // ustawienie odstępu pomiędzy liniami
+    auto block_fmt = textCursor().blockFormat();
+    block_fmt.setLineHeight(5, QTextBlockFormat::LineDistanceHeight);
+    textCursor().setBlockFormat(block_fmt);
+
+    // ustawinie długości TAB
+    setTabStopDistance(5 * fontMetrics().horizontalAdvance('-') - 2.0);
+
     EventController::instance().append(this, event::NoteSelected);
+}
+
+Browser::~Browser() {
+    EventController::instance().remove(this);
 }
 
 void Browser::customEvent(QEvent* const event) {
@@ -23,7 +36,6 @@ void Browser::customEvent(QEvent* const event) {
             if (auto data = e->data(); data.size() == 1) {
                 if (auto value = data[0]; value.canConvert<int>()) {
                     auto noteID = value.toInt();
-                    fmt::print("note id: {}\n", noteID);
                     if (auto note = Note::with_id(noteID); note) {
                         auto html = (*note).qcontent();
                         setHtml(html);
