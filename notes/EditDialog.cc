@@ -32,11 +32,14 @@
 #include <QAction>
 #include <QToolBar>
 #include <QLineEdit>
+#include <QComboBox>
 #include <QPushButton>
 #include <QGridLayout>
 #include <QApplication>
 #include <QMessageBox>
 #include <QDialogButtonBox>
+#include <QStandardItem>
+#include <QStandardItemModel>
 #include <fmt/core.h>
 
 EditDialog::EditDialog(Note&& note, QWidget* const parent) :
@@ -44,8 +47,17 @@ EditDialog::EditDialog(Note&& note, QWidget* const parent) :
         note_{std::move(note)},
         title_{new QLineEdit},
         description_{new QLineEdit},
-        editor_{new Editor}
+        editor_{new Editor},
+        size_cbox_{new QComboBox},
+        font_face_cbx_{new QComboBox}
 {
+    size_cbox_->setEditable(false);
+    for (int i = 8, row = 0; i < 26; ++i, ++row)
+        size_cbox_->addItem(qstr::fromStdString(fmt::format("{}", i)));
+    size_cbox_->setCurrentText("10");
+
+    populate_font_face_cbx();
+
     title_->setText(note_.value().qtitle());
     description_->setText(note_.value().qdescription());
     editor_->setHtml(note_.value().qcontent());
@@ -98,8 +110,15 @@ EditDialog::EditDialog(qi64 const category_id, QWidget* const parent) :
     title_{new QLineEdit},
     description_{new QLineEdit},
     editor_{new Editor},
-    category_id_{category_id}
+    category_id_{category_id},
+    size_cbox_{new QComboBox},
+    font_face_cbx_{new QComboBox}
 {
+    size_cbox_->setEditable(false);
+    for (int i = 8; i < 26; ++i)
+        size_cbox_->addItem(qstr::fromStdString(fmt::format("{}", i)));
+    size_cbox_->setCurrentText("10");
+
     setWindowTitle("New note");
     setSizeGripEnabled(true);
 
@@ -180,6 +199,9 @@ QVBoxLayout* EditDialog::editor_layout() noexcept {
         EventController::instance().send(event::SelectColorRequest);
     });
 
+    toolbar->addWidget(new QLabel("Font settings: "));
+    toolbar->addWidget(size_cbox_);
+    toolbar->addWidget(font_face_cbx_);
     toolbar->addWidget(spacer);
     toolbar->addAction(copy_action);
     toolbar->addAction(cut_action);
@@ -191,4 +213,35 @@ QVBoxLayout* EditDialog::editor_layout() noexcept {
     layout->addWidget(toolbar);
     layout->addWidget(editor_);
     return layout;
+}
+
+void EditDialog::populate_font_face_cbx() const noexcept {
+    font_face_cbx_->setEditable(false);
+
+    auto const model = new QStandardItemModel(3, 1);
+    {
+        auto const item = new QStandardItem("face");
+        model->setItem(0, item);
+    }
+    {
+        auto const item = new QStandardItem("bold");
+        item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+        item->setData(Qt::Unchecked, Qt::CheckStateRole);
+        model->setItem(1, item);
+    }
+    {
+        auto const item = new QStandardItem("italic");
+        item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+        item->setData(Qt::Unchecked, Qt::CheckStateRole);
+        model->setItem(2, item);
+    }
+    {
+        auto const item = new QStandardItem("underline");
+        item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+        item->setData(Qt::Unchecked, Qt::CheckStateRole);
+        model->setItem(3, item);
+    }
+    font_face_cbx_->setModel(model);
+    font_face_cbx_->setCurrentIndex(0);
+    font_face_cbx_->setMinimumWidth(font_face_cbx_->fontMetrics().boundingRect("underline").width() + 60);
 }

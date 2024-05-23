@@ -20,8 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.#pragma once
 //
-// Created by piotr on 09.04.24.
-//
+// Created by Piotr Pszczółkowski on 09.04.24.
 
 /*------- include files:
 -------------------------------------------------------------------*/
@@ -53,16 +52,9 @@
 std::string const CategoryTree::InsertQuery{"INSERT INTO category (pid, name) VALUES (?,?)"};
 std::string const CategoryTree::UpdateQuery{"UPDATE category SET name=? WHERE id=?"};
 std::string const CategoryTree::DeleteQuery{"DELETE FROM category WHERE id=?"};
-std::string const CategoryTree::CountQuery{"SELECT COUNT(*) as count FROM category WHERE pid=? AND name=?"};
-std::string const CategoryTree::SubcategoriesCountQuery{"SELECT COUNT(*) as count FROM category WHERE pid=?"};
 
 static char const* const RemoveTitle = "The category cannot be deleted.";
 static char const* const RemoveMessage = "This category cannot be deleted because it has subcategories!";
-
-/*------- forward declarations:
--------------------------------------------------------------------*/
-
-
 
 CategoryTree::CategoryTree(QWidget* const parent) :
     QTreeWidget(parent),
@@ -90,7 +82,7 @@ CategoryTree::CategoryTree(QWidget* const parent) :
     setColumnCount(1);
     setHorizontalScrollMode(ScrollPerPixel);
 
-    connect(this, &QTreeWidget::currentItemChanged, [this](auto, auto) {
+    connect(this, &QTreeWidget::currentItemChanged, [&](auto, auto) {
         timer_->stop();
         timer_->start();
     });
@@ -153,13 +145,11 @@ mousePressEvent(QMouseEvent* const event) {
 /// Dodanie nowej kategorii głównej,
 void CategoryTree::
 new_main_category() noexcept {
-    if (auto opt = category_dialog(Category{}); opt) {
-        auto category = opt.value();
-
+    if (auto category = category_dialog(Category{}); category) {
         // w ramach kategorii żadne dwie bezpośrednie(!) podkategorie nie mogą się tak samo nazywać
-        if (not already_exist(category.pid(), category.name())) {
+        if (not already_exist(category->pid(), category->name())) {
             // zapis podanej nazwy kategorii do bazy danych
-            auto const id = SQLite::instance().insert(InsertQuery, category.pid(), category.name());
+            auto const id = SQLite::instance().insert(InsertQuery, category->pid(), category->name());
             if (id not_eq SQLite::InvalidRowid) {
                 auto expanded = expanded_items();
                 update_content();
@@ -191,7 +181,13 @@ new_subcategory() noexcept {
 
                 // nowo utworzona podkategoria zostaje automatycznie wybrana
                 if (auto item = child_with_id_for(root_, id); item) {
-                    expandItem(item->parent());
+                    // Rozwijamy parent, aby nasza kategoria była widziana.
+                    auto parent = item->parent();
+                    while (parent) {
+                        if (!parent->isExpanded())
+                            expandItem(parent);
+                        parent = parent->parent();
+                    }
                     setCurrentItem(item);
                 }
             }

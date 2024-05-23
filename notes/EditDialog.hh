@@ -36,6 +36,7 @@
 class Editor;
 class QLineEdit;
 class QVBoxLayout;
+class QComboBox;
 
 class EditDialog : public QDialog {
     Q_OBJECT
@@ -48,6 +49,8 @@ private:
     qi64 category_id_{};
     std::optional<Note> note_{};
     i64 note_id_{};
+    QComboBox* const size_cbox_;
+    QComboBox* const font_face_cbx_;
 
 public:
     explicit EditDialog(qi64 category_id, QWidget* = nullptr);
@@ -70,6 +73,6 @@ public:
         return static_cast<T>(category_id_);
     }
 
-
+    void populate_font_face_cbx() const noexcept;
 
 };

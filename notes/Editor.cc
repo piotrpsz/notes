@@ -33,6 +33,7 @@
 #include <QColorDialog>
 #include <QFontDatabase>
 #include <fmt/core.h>
+#include <QDebug>
 
 Editor::Editor(QWidget* const parent) :
         QTextEdit(parent)
@@ -47,9 +48,15 @@ Editor::Editor(QWidget* const parent) :
     // ustawinie fontu
     QFont font;
     font.setFamily("Menlo");
+//    font.setFamily("Noto Sans Regular");
     font.setKerning(true);
-    font.setPointSize(11);
+    font.setPointSize(10);
     setFont(font);
+
+    {
+        auto f = QTextEdit::font();
+        qDebug() << f;
+    }
 
     // ustawinie długości TAB
     setTabStopDistance(5 * fontMetrics().horizontalAdvance('-') - 2.0);
@@ -61,6 +68,15 @@ Editor::Editor(QWidget* const parent) :
                                        event::PasteRequest,
                                        event::SelectColorRequest,
                                        event::SelectFontRequest);
+
+    connect(this, &QTextEdit::cursorPositionChanged, [&] {
+        auto const cursor = textCursor();
+        auto cf = cursor.charFormat();
+        auto c = cf.foreground().color();
+        auto f = cf.font();
+
+        fmt::print("r: {}, g: {}, b: {}, a: {} - \n", c.red(), c.green(), c.black(), c.alpha(), f.toString().toStdString());
+    });
 }
 
 Editor::~Editor() {

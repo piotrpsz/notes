@@ -52,9 +52,9 @@ NotesTable::NotesTable(QWidget* const parent) :
                                        event::RemoveCurrentNoteRequest,
                                        event::NoteDatabaseChanged);
 
-    connect(this, &QTableWidget::itemSelectionChanged, [&]{
-        if (auto current_item = item(currentRow(), 0); current_item) {
-            auto noteID = current_item->data(NoteID).toInt();
+    connect(this, &QTableWidget::currentItemChanged, [&] (auto current, auto){
+        if (current) {
+            auto noteID = current->data(NoteID).toInt();
             EventController::instance().send(event::NoteSelected, noteID);
         }
     });
@@ -70,6 +70,7 @@ void NotesTable::customEvent(QEvent* const event) {
     auto const e = dynamic_cast<Event *>(event);
     switch (int(e->type())) {
         case event::CategorySelected:
+            clear_content();
             if (auto data = e->data(); not data.empty()) {
                 if (auto value = data[0]; value.canConvert<int>()) {
                     update_content_for(value.toInt());
@@ -79,6 +80,7 @@ void NotesTable::customEvent(QEvent* const event) {
             }
             break;
         case event::NoteDatabaseChanged:
+            clear_content();
             if (auto data = e->data(); data.size() == 2) {
                 update_content_for(data[0].toInt());
                 auto noteID = data[1].toInt();
@@ -100,7 +102,7 @@ void NotesTable::customEvent(QEvent* const event) {
 void NotesTable::
 update_content_for(i64 const category_id) noexcept {
     // Usunięcie wszystkich wierszy w tabeli.
-    clearContents();
+    clear_content();
 
     if (auto ids = Category::ids_subchain_for(category_id); not ids.empty()) {
         if (auto notes = Note::notes(std::move(ids)); not notes.empty()) {

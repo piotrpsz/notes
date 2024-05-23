@@ -53,6 +53,10 @@ private:
     /// Uaktualnienie tabeli notatek dla wskazanej kategorii.
     /// \param id - numer ID kategorii, której notatki mają być wyświetlone.
     void update_content_for(i64 id) noexcept;
+    void clear_content() noexcept {
+        clearContents();
+        setRowCount(0);
+    }
 
     [[nodiscard]] QTableWidgetItem* row_with_id(qint64 id) const noexcept;
 };

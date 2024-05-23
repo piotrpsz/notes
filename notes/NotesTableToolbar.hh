@@ -20,14 +20,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.#pragma once
 //
-// Created by piotr on 27.04.24.
-//
+// Created by Piotr Pszczółkowski on 27.04.24.
 #pragma once
 
 /*------- include files:
 -------------------------------------------------------------------*/
 #include <QToolBar>
 #include "../shared.hh"
+#include <optional>
 
 /*------- forward declarations:
 -------------------------------------------------------------------*/
@@ -44,7 +44,8 @@ public:
 
 private:
     void customEvent(QEvent*) override;
-    void update_chain_info(int id = 0) noexcept;
+    void update_category_chain_info() noexcept;
+    std::optional<std::string> category_chain_;
     QLabel* const chain_info_;
     i64 current_category_id_{};
 };

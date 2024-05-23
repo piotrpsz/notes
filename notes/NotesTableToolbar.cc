@@ -1,3 +1,12 @@
+// MIT License
+//
+// Copyright (c) 2024 Piotr Pszczółkowski
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
 // The above copyright notice and this permission notice shall be included in all
@@ -11,10 +20,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.#pragma once
 //
-// Created by piotr on 27.04.24.
-//
+// Created by Piotr Pszczółkowski on 27.04.24.
 
+/*------- include files:
+-------------------------------------------------------------------*/
 #include "NotesTableToolbar.hh"
+#include "Tools.h"
 #include "../common/EventController.hh"
 #include "../model/category.hh"
 #include <QAction>
@@ -25,6 +36,7 @@
 
 NotesTableToolbar::NotesTableToolbar(QWidget* const parent) :
     QToolBar(parent),
+    category_chain_{},
     chain_info_{new QLabel}
 {
     // https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
@@ -60,8 +72,6 @@ NotesTableToolbar::NotesTableToolbar(QWidget* const parent) :
     });
 
     EventController::instance().append(this, event::CategorySelected);
-
-    update_chain_info();
 }
 
 void NotesTableToolbar::customEvent(QEvent* const event) {
@@ -70,30 +80,11 @@ void NotesTableToolbar::customEvent(QEvent* const event) {
         case event::CategorySelected:
             if (auto data = e->data(); not data.empty()) {
                 if (auto value = data[0]; value.canConvert<int>()) {
-                    update_chain_info(value.toInt());
+                    current_category_id_ = value.toInt();
+                    category_chain_ = Tools::chain_info(current_category_id_);
+                    chain_info_->setText(qstr::fromStdString(*category_chain_));
                 }
             }
             break;
     }
-}
-
-std::string fmt_chain_item(std::string const& name, bool last = false) noexcept {
-    if (last) return fmt::format("<b><font color=#94B88B>{}</font></b>", name);
-    return fmt::format("<b><font color=#94B88B>{}</font></b> <font color=#99a3a4>{}</font> ", name, "\u22b3");
-}
-
-void NotesTableToolbar::update_chain_info(int const id) noexcept {
-    current_category_id_ = id;
-    std::string text{"<b><font color=#5499c7>Category:</font></b> "};
-
-    if (id > 0) {
-        if (auto chain = Category::names_chain_for(id); chain) {
-            auto names = chain.value();
-            auto idx_last = names.size() - 1;
-            for (auto i = 0; i < idx_last; ++i)
-                text += fmt_chain_item(names[i]);
-            text += fmt_chain_item(names[idx_last], true);
-        }
-    }
-    chain_info_->setText(QString::fromStdString(text));
 }

@@ -20,8 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.#pragma once
 //
-// Created by piotr on 09.04.24.
-//
+// Created by Piotr Pszczółkowski on 09.04.24.
 
 /*------- include files:
 -------------------------------------------------------------------*/

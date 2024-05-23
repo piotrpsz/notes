@@ -36,5 +36,5 @@ NoteWidget::NoteWidget(QWidget* const parent) :
     main_layout->setContentsMargins(0, 0, 0, 0);
     main_layout->addWidget(new Browser);
     setLayout(main_layout);
-
 }
+
