@@ -60,6 +60,9 @@ namespace event {
         RemoveCurrentNoteRequest,
 
         SelectFontRequest,
+        BoldRequest,
+        ItalicRequest,
+        Underline,
         SelectColorRequest,
         CopyRequest,
         CutRequest,

@@ -40,6 +40,8 @@ class QComboBox;
 
 class EditDialog : public QDialog {
     Q_OBJECT
+    enum { FaceRole = Qt::UserRole+1 };
+    enum { Normal = 0x0, Bold = 0x1, Italic = 0x2, Underline = 0x4 };
 private:
     void showEvent(QShowEvent*) override;
 

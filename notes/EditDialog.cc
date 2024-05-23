@@ -216,32 +216,41 @@ QVBoxLayout* EditDialog::editor_layout() noexcept {
 }
 
 void EditDialog::populate_font_face_cbx() const noexcept {
-    font_face_cbx_->setEditable(false);
-
     auto const model = new QStandardItemModel(3, 1);
-    {
-        auto const item = new QStandardItem("face");
-        model->setItem(0, item);
-    }
-    {
-        auto const item = new QStandardItem("bold");
-        item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-        item->setData(Qt::Unchecked, Qt::CheckStateRole);
-        model->setItem(1, item);
-    }
-    {
-        auto const item = new QStandardItem("italic");
-        item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-        item->setData(Qt::Unchecked, Qt::CheckStateRole);
-        model->setItem(2, item);
-    }
-    {
-        auto const item = new QStandardItem("underline");
-        item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-        item->setData(Qt::Unchecked, Qt::CheckStateRole);
-        model->setItem(3, item);
-    }
+
+    auto const root = new QStandardItem("face");
+    model->setItem(0, root);
+
+    auto const bold = new QStandardItem("bold");
+    bold->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+    bold->setData(Qt::Unchecked, Qt::CheckStateRole);
+    bold->setData(Bold, FaceRole);
+    model->setItem(1, bold);
+
+    auto const italic = new QStandardItem("italic");
+    italic->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+    italic->setData(Qt::Unchecked, Qt::CheckStateRole);
+    italic->setData(Italic, FaceRole);
+    model->setItem(2, italic);
+
+    auto const underline = new QStandardItem("underline");
+    underline->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+    underline->setData(Qt::Unchecked, Qt::CheckStateRole);
+    underline->setData( Underline, FaceRole);
+    model->setItem(3, underline);
+
     font_face_cbx_->setModel(model);
     font_face_cbx_->setCurrentIndex(0);
     font_face_cbx_->setMinimumWidth(font_face_cbx_->fontMetrics().boundingRect("underline").width() + 60);
+
+    connect(model, &QStandardItemModel::itemChanged, [bold, italic, underline](auto item){
+        u8 state = Normal;
+        if (bold->checkState() & Qt::Checked) state |= Bold;
+        if(italic->checkState() & Qt::Checked) state |= Italic;
+        if(underline->checkState() & Qt::Checked) state |= Underline;
+        // TODO send event?
+    });
 }
+
+
+
