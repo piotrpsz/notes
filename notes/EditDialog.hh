@@ -20,8 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.#pragma once
 //
-// Created by piotr on 27.04.24.
-//
+// Created by Piotr Pszczółkowski on 27.04.24.
 #pragma once
 
 /*------- include files:
@@ -37,30 +36,26 @@ class Editor;
 class QLineEdit;
 class QVBoxLayout;
 class QComboBox;
+class QPushButton;
 
 class EditDialog : public QDialog {
     Q_OBJECT
     enum { FaceRole = Qt::UserRole+1 };
     enum { Normal = 0x0, Bold = 0x1, Italic = 0x2, Underline = 0x4 };
-private:
-    void showEvent(QShowEvent*) override;
-
     QLineEdit* const title_;
     QLineEdit* const description_;
     Editor* const editor_;
-    qi64 category_id_{};
     std::optional<Note> note_{};
     i64 note_id_{};
     QComboBox* const size_cbox_;
     QComboBox* const font_face_cbx_;
+    QPushButton* const accept_btn_;
+    QPushButton* const cancel_btn_;
 
 public:
     explicit EditDialog(qi64 category_id, QWidget* = nullptr);
     explicit EditDialog(Note&& note, QWidget* = nullptr);
-
     ~EditDialog() override = default;
-
-    QVBoxLayout* editor_layout() noexcept;
 
     Note get_note() {
         return std::move(note_.value());
@@ -70,11 +65,12 @@ public:
     T note_id() const noexcept {
         return static_cast<T>(note_id_);
     }
-    template<std::integral T>
-    T category_id() const noexcept {
-        return static_cast<T>(category_id_);
-    }
 
+private:
+    explicit EditDialog(QWidget* = nullptr);
+
+    void showEvent(QShowEvent*) override;
+    void populate_font_size_cbx() const noexcept;
     void populate_font_face_cbx() const noexcept;
-
+    [[nodiscard]] QVBoxLayout* editor_layout() const noexcept;
 };

@@ -17,7 +17,7 @@ bool bind2stmt(sqlite3_stmt* stmt, std::vector<value_t> const& args) noexcept;
 bool bind_at(sqlite3_stmt* stmt, int idx, value_t const& v) noexcept;
 
 // When statement not finalized do it.
-Stmt::~Stmt() noexcept {
+Stmt::~Stmt() {
     if (stmt_) {
         if (SQLITE_OK == sqlite3_finalize(stmt_)) {
             stmt_ = nullptr;

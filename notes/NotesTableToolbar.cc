@@ -25,7 +25,7 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include "NotesTableToolbar.hh"
-#include "Tools.h"
+#include "Tools.hh"
 #include "../common/EventController.hh"
 #include "../model/category.hh"
 #include <QAction>

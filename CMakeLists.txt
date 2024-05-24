@@ -75,7 +75,7 @@ add_executable(notes main.cc
         notes/DeleteNoteDialog.cc
         notes/DeleteNoteDialog.hh
         common/EventController.cc
-        notes/Tools.h
+        notes/Tools.hh
 )
 target_link_libraries(notes
         Qt::Core Qt::Gui Qt::Widgets

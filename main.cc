@@ -30,6 +30,7 @@
 #include "sqlite/sqlite.hh"
 #include "notes/MainWindow.hh"
 #include <QApplication>
+#include <QDir>
 #include <fmt/core.h>
 #include <string>
 
@@ -45,7 +46,7 @@ bool create_cmds(SQLite const& db, std::vector<std::string> const& commands) noe
 
 bool open_or_create_database() noexcept {
     using namespace std::string_literals;
-    static auto const DatabasePath = "/home/piotr/notes.sqlite"s;
+    static auto const DatabasePath = (QDir::homePath() + "/notes.sqlite").toStdString();
 
     // Try to open.
     if (SQLite::instance().open(DatabasePath))

@@ -27,6 +27,7 @@
 #include "../sqlite/sqlite.hh"
 #include "../common/EventController.hh"
 #include "CategoryTree.hh"
+#include "Tools.hh"
 #include <QMenu>
 #include <QLabel>
 #include <QFrame>
@@ -264,10 +265,11 @@ std::optional<Category> CategoryTree::
 category_dialog(Category&& category, bool const rename) noexcept {
     auto const parent_layout = new QHBoxLayout;
     if (category.id() == 0)
-        parent_layout->addWidget(new QLabel("No parents, this will be the new main category."));
+        parent_layout->addWidget(new QLabel("No parent category. This will be the new main category."));
     else {
         // TODO fetch all parent categories
-        auto str = fmt::format("Categories > {}", category.name());
+//        auto str = fmt::format("Categories > {}", category.name());
+        auto str = Tools::chain_info(category.id());
         parent_layout->addWidget(new QLabel(qstr::fromStdString(str)));
     }
 
@@ -278,7 +280,7 @@ category_dialog(Category&& category, bool const rename) noexcept {
     }
 
     auto const edit_layout = new QHBoxLayout;
-    edit_layout->addWidget(new QLabel{"Category name:"});
+    edit_layout->addWidget(new QLabel{category.id() ? "Subcategory name:" : "Category name:"});
     edit_layout->addWidget(editor);
 
     auto const separator = new QFrame;
@@ -302,6 +304,8 @@ category_dialog(Category&& category, bool const rename) noexcept {
         dialog->setWindowTitle("Add new main category");
     else
         dialog->setWindowTitle("Add new subcategory");
+
+    editor->setFocus();
 
     if (dialog->exec() and not editor->text().isEmpty()) {
         Category result{};

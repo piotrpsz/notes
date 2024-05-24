@@ -20,8 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.#pragma once
 //
-// Created by piotr on 27.04.24.
-//
+// Created by Piotr Pszczółkowski on 27.04.24.
 
 #include "EditDialog.hh"
 #include "Editor.hh"
@@ -37,57 +36,26 @@
 #include <QGridLayout>
 #include <QApplication>
 #include <QMessageBox>
-#include <QDialogButtonBox>
 #include <QStandardItem>
-#include <QStandardItemModel>
 #include <fmt/core.h>
 
-EditDialog::EditDialog(Note&& note, QWidget* const parent) :
-        QDialog(parent),
-        note_{std::move(note)},
-        title_{new QLineEdit},
-        description_{new QLineEdit},
-        editor_{new Editor},
-        size_cbox_{new QComboBox},
-        font_face_cbx_{new QComboBox}
-{
-    size_cbox_->setEditable(false);
-    for (int i = 8, row = 0; i < 26; ++i, ++row)
-        size_cbox_->addItem(qstr::fromStdString(fmt::format("{}", i)));
-    size_cbox_->setCurrentText("10");
-
-    populate_font_face_cbx();
+/// Edycja istniejącej notatki. \n
+/// Przy wywołaniu przekazujemy na własność notatkę, która ma być edytowana. \n
+/// Po zakończeniu należy pobrać nową (zmodyfikowaną) notatkę przez 'get_note'.
+/// \param note - notatka do edycji.
+EditDialog::EditDialog(Note&& note, QWidget *const parent) : EditDialog(parent) {
+    setWindowTitle("Edit note");
+    note_ = std::move(note);
 
     title_->setText(note_.value().qtitle());
     description_->setText(note_.value().qdescription());
     editor_->setHtml(note_.value().qcontent());
 
-    setWindowTitle("Edit note");
-    setSizeGripEnabled(true);
-
-    auto const separator{new QFrame};
-    separator->setFrameShape(QFrame::HLine);
-    separator->setFrameShadow(QFrame::Sunken);
-
-    auto const buttons{new QDialogButtonBox(QDialogButtonBox::Apply | QDialogButtonBox::Cancel)};
-    auto const apply_button = buttons->button(QDialogButtonBox::Apply);
-    auto const cancel_button = buttons->button(QDialogButtonBox::Cancel);
-
-    auto layout = new QGridLayout;
-    layout->addWidget(new QLabel("Tilte"), 0, 0);
-    layout->addWidget(title_, 0, 1);
-    layout->addWidget(new QLabel("Description"), 1, 0);
-    layout->addWidget(description_, 1, 1);
-    layout->addWidget(separator, 2, 0, 1, 2);
-    layout->addLayout(editor_layout(), 3, 0, 1, 2);
-    layout->addWidget(buttons, 4, 0, 1, 2);
-    setLayout(layout);
-
-    connect(apply_button, &QPushButton::clicked, [&]() {
-        auto new_note = std::move(*note_);
-        new_note.title(title_->text());
-        new_note.description((description_->text()));
-        new_note.content(editor_->toHtml());
+    connect(accept_btn_, &QPushButton::clicked, [&]() {
+        auto new_note = note_.value();
+        new_note.title(title_->text())
+                .description((description_->text()))
+                .content(editor_->toHtml());
         note_ = std::move(new_note);
 
         if (auto ok = note_.value().save(); not ok) {
@@ -99,74 +67,91 @@ EditDialog::EditDialog(Note&& note, QWidget* const parent) :
         accept();
     });
 
-    connect(cancel_button, &QPushButton::clicked, [this]() {
+    connect(cancel_btn_, &QPushButton::clicked, [this]() {
         reject();
     });
 }
 
-/// Nowa notatka dla wskazanej kategorii.
-EditDialog::EditDialog(qi64 const category_id, QWidget* const parent) :
-    QDialog(parent),
-    title_{new QLineEdit},
-    description_{new QLineEdit},
-    editor_{new Editor},
-    category_id_{category_id},
-    size_cbox_{new QComboBox},
-    font_face_cbx_{new QComboBox}
-{
-    size_cbox_->setEditable(false);
-    for (int i = 8; i < 26; ++i)
-        size_cbox_->addItem(qstr::fromStdString(fmt::format("{}", i)));
-    size_cbox_->setCurrentText("10");
 
+/// Nowa notatka dla wskazanej kategorii.
+EditDialog::EditDialog(qi64 const categoryID, QWidget *const parent) : EditDialog(parent) {
     setWindowTitle("New note");
+
+    // Próba zapisania nowej notatki do bazy danych.
+    connect(accept_btn_, &QPushButton::clicked, [this, categoryID] {
+        Note note = Note{}
+                .pid(categoryID)
+                .title(title_->text())
+                .description(description_->text())
+                .content(editor_->toHtml());
+        if (auto ok = note.save(); not ok) {
+            QMessageBox::critical(this, "Error", "Error writing to database.");
+            return;
+        }
+        else
+            note_id_ = note.id<i64>();
+        accept();
+    });
+
+    // Bye, bye
+    connect(cancel_btn_, &QPushButton::clicked, [this]() {
+        reject();
+    });
+}
+
+/********************************************************************
+ *                                                                  *
+ *                         P R I V A T E                            *
+ *                                                                  *
+ ********************************************************************/
+
+EditDialog::EditDialog(QWidget *const parent) :
+        QDialog(parent),
+        title_{new QLineEdit},
+        description_{new QLineEdit},
+        editor_{new Editor},
+        size_cbox_{new QComboBox},
+        font_face_cbx_{new QComboBox},
+        accept_btn_{new QPushButton{"Accept"}},
+        cancel_btn_{new QPushButton{"Cancel"}} {
     setSizeGripEnabled(true);
+    populate_font_size_cbx();
+    populate_font_face_cbx();
+
+    auto const buttons{new QHBoxLayout};
+    buttons->setContentsMargins(0, 0, 0, 0);
+    buttons->addStretch();
+    buttons->addWidget(cancel_btn_);
+    buttons->addWidget(accept_btn_);
+    accept_btn_->setDefault(true);
 
     auto const separator{new QFrame};
     separator->setFrameShape(QFrame::HLine);
     separator->setFrameShadow(QFrame::Sunken);
 
-    auto const buttons{new QDialogButtonBox(QDialogButtonBox::Apply | QDialogButtonBox::Cancel)};
-    auto const apply_button = buttons->button(QDialogButtonBox::Apply);
-
-    connect(apply_button, &QPushButton::clicked, [this]() {
-        Note note = note_.value_or(Note())
-                .pid(category_id_)
-                .title(title_->text())
-                .description(description_->text())
-                .content(editor_->toHtml());
-        if (auto ok = note.save(); not ok)
-            QMessageBox::critical(this, "Error", "Error writing to database.");
-        else {
-            note_id_ = note.id<i64>();
-        }
-        accept();
-    });
-    auto const cancel_button = buttons->button(QDialogButtonBox::Cancel);
-    connect(cancel_button, &QPushButton::clicked, [this]() {
-        reject();
-    });
-
     auto layout = new QGridLayout;
+    layout->setContentsMargins(8, 8, 8, 4);
     layout->addWidget(new QLabel("Tilte"), 0, 0);
     layout->addWidget(title_, 0, 1);
     layout->addWidget(new QLabel("Description"), 1, 0);
     layout->addWidget(description_, 1, 1);
     layout->addWidget(separator, 2, 0, 1, 2);
     layout->addLayout(editor_layout(), 3, 0, 1, 2);
-    layout->addWidget(buttons, 4, 0, 1, 2);
+    layout->addLayout(buttons, 4, 0, 1, 2);
 
     setLayout(layout);
 }
 
-void EditDialog::showEvent(QShowEvent* e) {
+void EditDialog::
+showEvent(QShowEvent *e) {
     auto const parent = QApplication::activeWindow();
     auto const size = parent->size();
     resize(int(size.width() * .7), int(size.height() * .7));
     QDialog::showEvent(e);
 }
 
-QVBoxLayout* EditDialog::editor_layout() noexcept {
+QVBoxLayout *EditDialog::
+editor_layout() const noexcept {
     // https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
 
     // Ikony po będą po prawej stronie. Aby tak się stało dodamy
@@ -176,7 +161,6 @@ QVBoxLayout* EditDialog::editor_layout() noexcept {
 
     auto const toolbar{new QToolBar};
     toolbar->setIconSize(QSize(16, 16));
-
 
     auto const copy_action = new QAction(QIcon::fromTheme("edit-copy"), "Copy");
     connect(copy_action, &QAction::triggered, [this]() {
@@ -210,12 +194,22 @@ QVBoxLayout* EditDialog::editor_layout() noexcept {
     toolbar->addAction(color_action);
 
     auto const layout{new QVBoxLayout};
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(toolbar);
     layout->addWidget(editor_);
     return layout;
 }
 
-void EditDialog::populate_font_face_cbx() const noexcept {
+void EditDialog::
+populate_font_size_cbx() const noexcept {
+    size_cbox_->setEditable(false);
+    for (int i = 8; i < 26; ++i)
+        size_cbox_->addItem(qstr::fromStdString(fmt::format("{}", i)));
+    size_cbox_->setCurrentText("10");
+}
+
+void EditDialog::
+populate_font_face_cbx() const noexcept {
     auto const model = new QStandardItemModel(3, 1);
 
     auto const root = new QStandardItem("face");
@@ -236,21 +230,20 @@ void EditDialog::populate_font_face_cbx() const noexcept {
     auto const underline = new QStandardItem("underline");
     underline->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
     underline->setData(Qt::Unchecked, Qt::CheckStateRole);
-    underline->setData( Underline, FaceRole);
+    underline->setData(Underline, FaceRole);
     model->setItem(3, underline);
 
     font_face_cbx_->setModel(model);
     font_face_cbx_->setCurrentIndex(0);
     font_face_cbx_->setMinimumWidth(font_face_cbx_->fontMetrics().boundingRect("underline").width() + 60);
 
-    connect(model, &QStandardItemModel::itemChanged, [bold, italic, underline](auto item){
+    connect(model, &QStandardItemModel::itemChanged, [bold, italic, underline](auto item) {
         u8 state = Normal;
         if (bold->checkState() & Qt::Checked) state |= Bold;
-        if(italic->checkState() & Qt::Checked) state |= Italic;
-        if(underline->checkState() & Qt::Checked) state |= Underline;
+        if (italic->checkState() & Qt::Checked) state |= Italic;
+        if (underline->checkState() & Qt::Checked) state |= Underline;
         // TODO send event?
     });
 }
-
 
 

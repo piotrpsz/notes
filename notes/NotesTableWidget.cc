@@ -14,5 +14,6 @@ NotesTableWidget::NotesTableWidget(QWidget *const parent)
     layout->addWidget(new NotesTableToolbar);
     layout->addWidget(new NotesTable);
     layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(1);
     setLayout(layout);
 }
