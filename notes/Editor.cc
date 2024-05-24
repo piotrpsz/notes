@@ -20,8 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.#pragma once
 //
-// Created by piotr on 30.04.24.
-//
+// Created by Piotr Pszczółkowski on 30.04.24.
 
 /*------- include files:
 -------------------------------------------------------------------*/
@@ -31,35 +30,25 @@
 #include <QKeyEvent>
 #include <QFontDialog>
 #include <QColorDialog>
-#include <QFontDatabase>
 #include <fmt/core.h>
-#include <QDebug>
 
-Editor::Editor(QWidget* const parent) :
-        QTextEdit(parent)
-{
+Editor::Editor(QWidget* const parent) : QTextEdit(parent) {
     setAcceptRichText(true);
 
     // ustawienie odstępu pomiędzy liniami
     auto block_fmt = textCursor().blockFormat();
-    block_fmt.setLineHeight(5, QTextBlockFormat::LineDistanceHeight);
+    block_fmt.setLineHeight(DEFAULT_LINE_DISTANCE, QTextBlockFormat::LineDistanceHeight);
     textCursor().setBlockFormat(block_fmt);
 
     // ustawinie fontu
     QFont font;
-    font.setFamily("Menlo");
-//    font.setFamily("Noto Sans Regular");
+    font.setFamily("Menlo");    // "Noto Sans Regular"
     font.setKerning(true);
-    font.setPointSize(10);
+    font.setPointSize(DEFAULT_FONT_HEIGHT);
     setFont(font);
 
-    {
-        auto f = QTextEdit::font();
-        qDebug() << f;
-    }
-
     // ustawinie długości TAB
-    setTabStopDistance(5 * fontMetrics().horizontalAdvance('-') - 2.0);
+    setTabStopDistance(DEFAULT_TAB_STOP * fontMetrics().horizontalAdvance('-') - 2.0);
 
 
     EventController::instance().append(this,
@@ -75,7 +64,7 @@ Editor::Editor(QWidget* const parent) :
         auto c = cf.foreground().color();
         auto f = cf.font();
 
-        fmt::print("r: {}, g: {}, b: {}, a: {} - \n", c.red(), c.green(), c.black(), c.alpha(), f.toString().toStdString());
+        fmt::print("r: {}, g: {}, b: {}, a: {} - {}\n", c.red(), c.green(), c.black(), c.alpha(), f.toString().toStdString());
     });
 }
 
@@ -144,13 +133,20 @@ void Editor::select_font() noexcept {
 //            fmt::print("\t{}\n", style.toStdString());
 //    }
 
+    auto const cursor = textCursor();
+    auto const cf = cursor.charFormat();
     bool ok;
-    auto const fnt = QFontDialog::getFont(&ok, this);
+    auto const fnt = QFontDialog::getFont(&ok, cf.font());
     if (ok)
         setCurrentFont(fnt);
 }
 
 void Editor::select_color() noexcept {
-    auto const color = QColorDialog::getColor();
+    auto const cursor = textCursor();
+    auto cf = cursor.charFormat();
+//    auto c = cf.foreground().color();
+//    auto f = cf.font();
+
+    auto const color = QColorDialog::getColor(cf.foreground().color());
     setTextColor(color);
 }

@@ -52,9 +52,14 @@ EditDialog::EditDialog(Note&& note, QWidget *const parent) : EditDialog(parent) 
     editor_->setHtml(note_.value().qcontent());
 
     connect(accept_btn_, &QPushButton::clicked, [&]() {
+        // Sprawdź czy stosowne pola mają zawartość.
+        if (not valid())
+            return;
+
+        // Utwórz nową wersję notatki.
         auto new_note = note_.value();
-        new_note.title(title_->text())
-                .description((description_->text()))
+        new_note.title(title_->text().trimmed())
+                .description((description_->text().trimmed()))
                 .content(editor_->toHtml());
         note_ = std::move(new_note);
 
@@ -79,11 +84,16 @@ EditDialog::EditDialog(qi64 const categoryID, QWidget *const parent) : EditDialo
 
     // Próba zapisania nowej notatki do bazy danych.
     connect(accept_btn_, &QPushButton::clicked, [this, categoryID] {
+        // Sprawdź czy stosowne pola mają zawartość.
+        if (not valid())
+            return;
+        // Utwórz obiekt nowej notatki
         Note note = Note{}
                 .pid(categoryID)
-                .title(title_->text())
-                .description(description_->text())
+                .title(title_->text().trimmed())
+                .description(description_->text().trimmed())
                 .content(editor_->toHtml());
+        // i ją zapisz do bazy danych.
         if (auto ok = note.save(); not ok) {
             QMessageBox::critical(this, "Error", "Error writing to database.");
             return;
@@ -112,11 +122,14 @@ EditDialog::EditDialog(QWidget *const parent) :
         editor_{new Editor},
         size_cbox_{new QComboBox},
         font_face_cbx_{new QComboBox},
+        color_cbx_{new QComboBox},
         accept_btn_{new QPushButton{"Accept"}},
-        cancel_btn_{new QPushButton{"Cancel"}} {
+        cancel_btn_{new QPushButton{"Cancel"}}
+{
     setSizeGripEnabled(true);
     populate_font_size_cbx();
     populate_font_face_cbx();
+    populate_color_cbx();
 
     auto const buttons{new QHBoxLayout};
     buttons->setContentsMargins(0, 0, 0, 0);
@@ -186,6 +199,7 @@ editor_layout() const noexcept {
     toolbar->addWidget(new QLabel("Font settings: "));
     toolbar->addWidget(size_cbox_);
     toolbar->addWidget(font_face_cbx_);
+    toolbar->addWidget(color_cbx_);
     toolbar->addWidget(spacer);
     toolbar->addAction(copy_action);
     toolbar->addAction(cut_action);
@@ -206,6 +220,15 @@ populate_font_size_cbx() const noexcept {
     for (int i = 8; i < 26; ++i)
         size_cbox_->addItem(qstr::fromStdString(fmt::format("{}", i)));
     size_cbox_->setCurrentText("10");
+}
+
+void EditDialog::
+populate_color_cbx() const noexcept {
+    color_cbx_->addItem("Default");
+    color_cbx_->addItem("color 0");
+    color_cbx_->addItem("color 1");
+    color_cbx_->setItemData(1, QBrush(Qt::red), Qt::ForegroundRole);
+    color_cbx_->setItemData(2, QBrush(Qt::green), Qt::ForegroundRole);
 }
 
 void EditDialog::
@@ -246,4 +269,18 @@ populate_font_face_cbx() const noexcept {
     });
 }
 
+bool EditDialog::
+valid() noexcept {
+    if (title_->text().trimmed().isEmpty()) {
+        QMessageBox::critical(this, "Warning", "The note must have a title");
+        title_->setFocus();
+        return  false;
+    }
+    if (editor_->toPlainText().trimmed().isEmpty()) {
+        QMessageBox::critical(this, "Warning", "The note must contain some content.");
+        editor_->setFocus();
+        return  false;
+    }
+    return true;
+}
 

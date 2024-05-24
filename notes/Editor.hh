@@ -45,4 +45,9 @@ private:
     void keyPressEvent(QKeyEvent*) override;
     void select_color() noexcept;
     void select_font() noexcept;
+
+private:
+    static const int DEFAULT_FONT_HEIGHT = 12;
+    static const int DEFAULT_TAB_STOP = 5;
+    static const int DEFAULT_LINE_DISTANCE = 5;
 };

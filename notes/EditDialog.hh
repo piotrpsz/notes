@@ -49,6 +49,7 @@ class EditDialog : public QDialog {
     i64 note_id_{};
     QComboBox* const size_cbox_;
     QComboBox* const font_face_cbx_;
+    QComboBox* const color_cbx_;
     QPushButton* const accept_btn_;
     QPushButton* const cancel_btn_;
 
@@ -68,9 +69,11 @@ public:
 
 private:
     explicit EditDialog(QWidget* = nullptr);
+    bool valid() noexcept;
 
     void showEvent(QShowEvent*) override;
     void populate_font_size_cbx() const noexcept;
     void populate_font_face_cbx() const noexcept;
+    void populate_color_cbx() const noexcept;
     [[nodiscard]] QVBoxLayout* editor_layout() const noexcept;
 };
