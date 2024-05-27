@@ -24,6 +24,7 @@
 
 #include "EditDialog.hh"
 #include "Editor.hh"
+#include "Tools.hh"
 #include "../common/EventController.hh"
 #include <QIcon>
 #include <QFrame>
@@ -46,6 +47,7 @@
 EditDialog::EditDialog(Note&& note, QWidget *const parent) : EditDialog(parent) {
     setWindowTitle("Edit note");
     note_ = std::move(note);
+    chain_info_->setText(qstr::fromStdString(Tools::chain_info(note_->pid<i64>())));
 
     title_->setText(note_.value().qtitle());
     description_->setText(note_.value().qdescription());
@@ -81,6 +83,7 @@ EditDialog::EditDialog(Note&& note, QWidget *const parent) : EditDialog(parent) 
 /// Nowa notatka dla wskazanej kategorii.
 EditDialog::EditDialog(qi64 const categoryID, QWidget *const parent) : EditDialog(parent) {
     setWindowTitle("New note");
+    chain_info_->setText(qstr::fromStdString(Tools::chain_info(categoryID)));
 
     // Próba zapisania nowej notatki do bazy danych.
     connect(accept_btn_, &QPushButton::clicked, [this, categoryID] {
@@ -124,7 +127,8 @@ EditDialog::EditDialog(QWidget *const parent) :
         font_face_cbx_{new QComboBox},
         color_cbx_{new QComboBox},
         accept_btn_{new QPushButton{"Accept"}},
-        cancel_btn_{new QPushButton{"Cancel"}}
+        cancel_btn_{new QPushButton{"Cancel"}},
+        chain_info_{new QLabel{"Dupa"}}
 {
     setSizeGripEnabled(true);
     populate_font_size_cbx();
@@ -144,13 +148,17 @@ EditDialog::EditDialog(QWidget *const parent) :
 
     auto layout = new QGridLayout;
     layout->setContentsMargins(8, 8, 8, 4);
-    layout->addWidget(new QLabel("Tilte"), 0, 0);
-    layout->addWidget(title_, 0, 1);
-    layout->addWidget(new QLabel("Description"), 1, 0);
-    layout->addWidget(description_, 1, 1);
-    layout->addWidget(separator, 2, 0, 1, 2);
-    layout->addLayout(editor_layout(), 3, 0, 1, 2);
-    layout->addLayout(buttons, 4, 0, 1, 2);
+
+    int row = 0;
+    layout->addWidget(chain_info_, row++, 0, 1, 2, Qt::AlignHCenter);
+
+    layout->addWidget(new QLabel("Tilte"), row, 0);
+    layout->addWidget(title_, row++, 1);
+    layout->addWidget(new QLabel("Description"), row, 0);
+    layout->addWidget(description_, row++, 1);
+    layout->addWidget(separator, row++, 0, 1, 2);
+    layout->addLayout(editor_layout(), row++, 0, 1, 2);
+    layout->addLayout(buttons, row, 0, 1, 2);
 
     setLayout(layout);
 }
@@ -225,10 +233,16 @@ populate_font_size_cbx() const noexcept {
 void EditDialog::
 populate_color_cbx() const noexcept {
     color_cbx_->addItem("Default");
-    color_cbx_->addItem("color 0");
-    color_cbx_->addItem("color 1");
-    color_cbx_->setItemData(1, QBrush(Qt::red), Qt::ForegroundRole);
-    color_cbx_->setItemData(2, QBrush(Qt::green), Qt::ForegroundRole);
+    color_cbx_->addItem("example");
+    color_cbx_->addItem("example");
+    color_cbx_->addItem("example");
+    color_cbx_->addItem("example");
+
+    color_cbx_->setItemData(1, color0, Qt::ForegroundRole);
+    color_cbx_->setItemData(2, color1, Qt::ForegroundRole);
+    color_cbx_->setItemData(3, color2, Qt::ForegroundRole);
+    color_cbx_->setItemData(4, color3, Qt::ForegroundRole);
+
 }
 
 void EditDialog::

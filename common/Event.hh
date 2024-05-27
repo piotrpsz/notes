@@ -54,10 +54,10 @@ public:
 namespace event {
     enum {
         CategorySelected = (QEvent::User + 1),
-        CategoryRemoved,
         NewNoteRequest,
         EditNoteRequest,
         RemoveCurrentNoteRequest,
+        MoveCurrentNoteRequest,
 
         SelectFontRequest,
         BoldRequest,

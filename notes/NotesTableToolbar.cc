@@ -27,7 +27,6 @@
 #include "NotesTableToolbar.hh"
 #include "Tools.hh"
 #include "../common/EventController.hh"
-#include "../model/category.hh"
 #include <QAction>
 #include <QIcon>
 #include <QLabel>
@@ -43,6 +42,7 @@ NotesTableToolbar::NotesTableToolbar(QWidget* const parent) :
 
     setIconSize(QSize(16, 16));
 
+    auto const move_action = new QAction(QIcon::fromTheme("folder-new"), "Move");
     auto const add_action = new QAction(QIcon::fromTheme("list-add"), "Add");
     auto const edt_action = new QAction(QIcon::fromTheme("accessories-text-editor"), "Edit");
     auto const del_action = new QAction(QIcon::fromTheme("list-remove"), "Delete");
@@ -60,6 +60,7 @@ NotesTableToolbar::NotesTableToolbar(QWidget* const parent) :
     addAction(add_action);
     addAction(edt_action);
     addAction(del_action);
+    addAction(move_action);
 
     connect(add_action, &QAction::triggered, [this]() {
         EventController::instance().send(event::NewNoteRequest, qint64(current_category_id_));
@@ -69,6 +70,9 @@ NotesTableToolbar::NotesTableToolbar(QWidget* const parent) :
     });
     connect(del_action, &QAction::triggered, []() {
         EventController::instance().send(event::RemoveCurrentNoteRequest);
+    });
+    connect(move_action, &QAction::triggered, [] {
+        EventController::instance().send(event::MoveCurrentNoteRequest);
     });
 
     EventController::instance().append(this, event::CategorySelected);

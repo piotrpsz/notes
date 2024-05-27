@@ -37,6 +37,7 @@ class QLineEdit;
 class QVBoxLayout;
 class QComboBox;
 class QPushButton;
+class QLabel;
 
 class EditDialog : public QDialog {
     Q_OBJECT
@@ -52,6 +53,7 @@ class EditDialog : public QDialog {
     QComboBox* const color_cbx_;
     QPushButton* const accept_btn_;
     QPushButton* const cancel_btn_;
+    QLabel* const chain_info_;
 
 public:
     explicit EditDialog(qi64 category_id, QWidget* = nullptr);
@@ -76,4 +78,9 @@ private:
     void populate_font_face_cbx() const noexcept;
     void populate_color_cbx() const noexcept;
     [[nodiscard]] QVBoxLayout* editor_layout() const noexcept;
+
+    static inline QColor const color0{0xcf, 0x8e, 0x6d};
+    static inline QColor const color1{0x2a, 0xac, 0xb8};
+    static inline QColor const color2{0x5a, 0xab, 0x73};
+    static inline QColor const color3{0xff, 0xc6, 0x6d};
 };
