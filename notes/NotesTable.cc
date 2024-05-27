@@ -97,18 +97,21 @@ void NotesTable::customEvent(QEvent* const event) {
             }
             break;
         case event::MoveCurrentNoteRequest:
-            if (auto current_item = item(currentRow(), 0); current_item) {
-                if (auto data = current_item->data(NoteID); data.isValid() && data.canConvert<int>()) {
-                    auto noteID = data.toInt();
-                    auto dialog = new TreeDialog;
-                    dialog->exec();
-                    fmt::print("move note: {}\n", noteID);
+            if (hasFocus()) {
+                if (auto current_item = item(currentRow(), 0); current_item) {
+                    if (auto ids = ids_from(current_item); ids) {
+                        auto [categoryID, noteID] = *ids;
+                        auto dialog = new TreeDialog(categoryID);
+                        if (dialog->exec() == QDialog::Accepted) {
 
+                        }
+                    }
                 }
             }
             break;
     }
 }
+
 
 /// Wyświetlamy wszystkie notatki dla wskazanej kategorii
 /// oraz wszystkich jej podkategorii (jeśli istnieją).
@@ -170,4 +173,7 @@ delete_note(qi64 const noteID) noexcept {
     }
 }
 
+void NotesTable::
+move_note(i64 noteID, i64 destinationCategoryID) const noexcept {
 
+}

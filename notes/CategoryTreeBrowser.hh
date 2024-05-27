@@ -26,11 +26,26 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include <QTreeWidget>
+#include "../shared.hh"
+
+/*------- forward declarations:
+-------------------------------------------------------------------*/
+class StoreCategory;
+class QTreeWidgetItem;
+
 
 class CategoryTreeBrowser : public QTreeWidget {
     Q_OBJECT
     enum { IdRole = Qt::UserRole+1, PidRole};
+    StoreCategory* store_{};
+    QTreeWidgetItem* root_{};
 public:
-    explicit CategoryTreeBrowser(QWidget* = nullptr);
+    explicit CategoryTreeBrowser(i64 categoryID, QWidget* = nullptr);
     ~CategoryTreeBrowser() override = default;
+
+private:
+    void populate_content() noexcept;
+    void add_items_for(QTreeWidgetItem* item) noexcept;
+    i64 selectedID() const noexcept;
+    static QTreeWidgetItem* child_with_id_for(QTreeWidgetItem* parent, i64 id) noexcept;
 };

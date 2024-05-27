@@ -31,11 +31,16 @@
 /*------- forward declaration:
 -------------------------------------------------------------------*/
 class CategoryTreeBrowser;
+class QShowEvent;
 
 class TreeDialog : public QDialog {
     Q_OBJECT
     CategoryTreeBrowser* const tree_;
+    i64 selected_category_{-1};
 public:
-    TreeDialog(QWidget* = nullptr);
+    TreeDialog(i64 categoryID, QWidget* = nullptr);
     ~TreeDialog() override = default;
+
+private:
+    void showEvent(QShowEvent*) override;
 };

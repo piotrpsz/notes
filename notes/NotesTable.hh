@@ -28,35 +28,63 @@
 -------------------------------------------------------------------*/
 #include "../shared.hh"
 #include <QTableWidget>
+#include <optional>
+#include <utility>
 
 /*------- forward declarations:
 -------------------------------------------------------------------*/
 class QEvent;
+
 class QTableWidgetItem;
 
 /*------- class:
 -------------------------------------------------------------------*/
 class NotesTable : public QTableWidget {
-    Q_OBJECT
-    enum { NoteID = Qt::UserRole+1, CategoryID};
+Q_OBJECT
+
+    enum {
+        NoteID = Qt::UserRole + 1, CategoryID
+    };
     i64 categoryID_{};
 public:
-    explicit NotesTable(QWidget* = nullptr);
+    explicit NotesTable(QWidget * = nullptr);
+
     ~NotesTable() override = default;
+
 private:
     /// Odbieranie zdefiniowanych w programie zdarzeń.
     /// \param event - zdarzenie
-    void customEvent(QEvent* event) override;
+    void customEvent(QEvent *event) override;
 
     void delete_note(qi64 noteID) noexcept;
 
     /// Uaktualnienie tabeli notatek dla wskazanej kategorii.
     /// \param id - numer ID kategorii, której notatki mają być wyświetlone.
     void update_content_for(i64 id) noexcept;
+
     void clear_content() noexcept {
         clearContents();
         setRowCount(0);
     }
 
-    [[nodiscard]] QTableWidgetItem* row_with_id(qint64 id) const noexcept;
+    [[nodiscard]] QTableWidgetItem *current_item() const noexcept {
+        return item(currentRow(), 0);
+    }
+
+    std::optional<std::pair<i64, i64>> ids_from(QTableWidgetItem *const item) const noexcept {
+        i64 noteID{-1}, categoryID{-1};
+
+        if (auto data = item->data(CategoryID); data.isValid() && data.canConvert<int>())
+            categoryID = data.toInt();
+        if (auto data = item->data(NoteID); data.isValid() && data.canConvert<int>())
+            noteID = data.toInt();
+
+        if (noteID not_eq -1 and categoryID not_eq -1)
+            return std::make_pair(categoryID, noteID);
+        return {};
+    }
+
+    [[nodiscard]] QTableWidgetItem *row_with_id(qint64 id) const noexcept;
+
+    void move_note(i64 noteID, i64 destinationCategoryID) const noexcept;
 };

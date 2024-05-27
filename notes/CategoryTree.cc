@@ -101,10 +101,9 @@ update_content() noexcept {
     delete store_;
     store_ = new StoreCategory(this);
 
-    root_ = new QTreeWidgetItem(this);
-
     // Ustawiamy kategorię 'root', która jest rodzicem
     // wszystkich innych kategorii.
+    root_ = new QTreeWidgetItem(this);
     root_->setText(0, "Categories");
     root_->setData(0, IdRole, 0);
     root_->setData(0, PidRole, 0);
