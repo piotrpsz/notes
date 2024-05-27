@@ -44,8 +44,6 @@ class CategoryTree : public QTreeWidget {
     Q_OBJECT
     enum { IdRole = Qt::UserRole+1, PidRole};
 public:
-//    struct Category { i64 id{}; i64 pid{}; qstr name{}; };
-public:
     explicit CategoryTree(QWidget* = nullptr);
     ~CategoryTree() override = default;
 

@@ -27,6 +27,7 @@
 -------------------------------------------------------------------*/
 #include "NotesTable.hh"
 #include "DeleteNoteDialog.hh"
+#include "TreeDialog.hh"
 #include "../model/note.hh"
 #include "../model/category.hh"
 #include "../common/EventController.hh"
@@ -50,6 +51,7 @@ NotesTable::NotesTable(QWidget* const parent) :
     EventController::instance().append(this,
                                        event::CategorySelected,
                                        event::RemoveCurrentNoteRequest,
+                                       event::MoveCurrentNoteRequest,
                                        event::NoteDatabaseChanged);
 
     connect(this, &QTableWidget::currentItemChanged, [&] (auto current, auto){
@@ -92,6 +94,17 @@ void NotesTable::customEvent(QEvent* const event) {
             if (auto current_item = item(currentRow(), 0); current_item) {
                 auto noteID = current_item->data(NoteID).toInt();
                 delete_note(noteID);
+            }
+            break;
+        case event::MoveCurrentNoteRequest:
+            if (auto current_item = item(currentRow(), 0); current_item) {
+                if (auto data = current_item->data(NoteID); data.isValid() && data.canConvert<int>()) {
+                    auto noteID = data.toInt();
+                    auto dialog = new TreeDialog;
+                    dialog->exec();
+                    fmt::print("move note: {}\n", noteID);
+
+                }
             }
             break;
     }
