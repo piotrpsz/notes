@@ -27,11 +27,27 @@ remove(i64 const id) noexcept {
     return SQLite::instance().exec("DELETE FROM note WHERE id=?", id);
 }
 
+bool Note::
+containsParentTheNoteWithTitle(i64 categoryID, std::string const& title) noexcept {
+    auto countQuery = "SELECT COUNT(*) as count FROM note WHERE pid=? AND title=?";
+    if (auto result = SQLite::instance().select(countQuery, categoryID, title); result) {
+        if (auto data = *result; data.size() == 1) {
+            auto row = data[0];
+            if (auto field = row["count"]; field) {
+                if (auto n = (*field).value().int64(); n > 0)
+                    return true;
+            }
+        }
+    }
+    return {};
+}
+
+/// Odczyt rekordu z notatką z podanym ID.
 std::optional<Note> Note::
-with_id(i64 const id, std::string const &fields) noexcept {
-    auto cmd = fmt::format("SELECT {} FROM note WHERE id=?", fields);
-    if (auto result = SQLite::instance().select(cmd, id); result)
-        if (auto data = result.value(); not data.empty())
+withID(i64 const noteID, std::string const &fields) noexcept {
+    auto selectQuery = fmt::format("SELECT {} FROM note WHERE id=?", fields);
+    if (auto result = SQLite::instance().select(selectQuery, noteID); result)
+        if (auto data = *result; data.size() == 1)
             return Note(data[0]);
 
     return {};
@@ -51,8 +67,8 @@ insert() noexcept {
 bool Note::
 update() noexcept {
     using namespace std::string_literals;
-    auto cmd{"UPDATE note SET title=?, description=?, content=? WHERE id=?"s};
-    return SQLite::instance().update(cmd, title_, description_, content_, id_);
+    auto cmd{"UPDATE note SET pid=?, title=?, description=?, content=? WHERE id=?"s};
+    return SQLite::instance().update(cmd, pid_, title_, description_, content_, id_);
 }
 
 // Odczyt z bazy danych notatek których numery ID są podane jako argument w wektorze 'ids'.

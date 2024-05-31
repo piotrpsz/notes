@@ -41,7 +41,7 @@ public:
         });
     }
 
-    std::vector<Category> childs(int const pid) const noexcept {
+    std::vector<Category> childsForParentWithID(int const pid) const noexcept {
         auto it = data_.find(pid);
         if (it != data_.end())
             return it->second;

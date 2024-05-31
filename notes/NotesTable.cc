@@ -21,7 +21,6 @@
 // SOFTWARE.#pragma once
 //
 // Created by piotr on 09.04.24.
-//
 
 /*------- include files:
 -------------------------------------------------------------------*/
@@ -34,6 +33,7 @@
 #include <QTableWidgetItem>
 #include <QDialog>
 #include <QHeaderView>
+#include <QMessageBox>
 #include <fmt/core.h>
 
 NotesTable::NotesTable(QWidget* const parent) :
@@ -54,10 +54,11 @@ NotesTable::NotesTable(QWidget* const parent) :
                                        event::MoveCurrentNoteRequest,
                                        event::NoteDatabaseChanged);
 
-    connect(this, &QTableWidget::currentItemChanged, [&] (auto current, auto){
-        if (current) {
-            auto noteID = current->data(NoteID).toInt();
-            EventController::instance().send(event::NoteSelected, noteID);
+
+    connect(this, &QTableWidget::currentItemChanged, [&] (QTableWidgetItem* currentItem, auto){
+        if (currentItem) {
+            if (auto noteID = currentItem->data(NoteID); noteID.canConvert<int>())
+                EventController::instance().send(event::NoteSelected, noteID.toInt());
         }
     });
     connect(this, &QTableWidget::cellDoubleClicked, [&] (auto row, auto col){
@@ -72,19 +73,19 @@ void NotesTable::customEvent(QEvent* const event) {
     auto const e = dynamic_cast<Event *>(event);
     switch (int(e->type())) {
         case event::CategorySelected:
-            clear_content();
+            clearContent();
             if (auto data = e->data(); not data.empty()) {
                 if (auto value = data[0]; value.canConvert<int>()) {
-                    update_content_for(value.toInt());
+                    updateContentForCategoryWithID(value.toInt());
                     auto m = model();
                     selectRow(0);
                 }
             }
             break;
         case event::NoteDatabaseChanged:
-            clear_content();
+            clearContent();
             if (auto data = e->data(); data.size() == 2) {
-                update_content_for(data[0].toInt());
+                updateContentForCategoryWithID(data[0].toInt());
                 auto noteID = data[1].toInt();
                 if (auto item = row_with_id(noteID); item)
                     setCurrentItem(item);
@@ -93,18 +94,16 @@ void NotesTable::customEvent(QEvent* const event) {
         case event::RemoveCurrentNoteRequest:
             if (auto current_item = item(currentRow(), 0); current_item) {
                 auto noteID = current_item->data(NoteID).toInt();
-                delete_note(noteID);
+                deleteNoteWithID(noteID);
             }
             break;
         case event::MoveCurrentNoteRequest:
-            if (hasFocus()) {
-                if (auto current_item = item(currentRow(), 0); current_item) {
-                    if (auto ids = ids_from(current_item); ids) {
-                        auto [categoryID, noteID] = *ids;
-                        auto dialog = new TreeDialog(categoryID);
-                        if (dialog->exec() == QDialog::Accepted) {
-
-                        }
+            if (auto item = currentItem(); item) {
+                if (auto data = dataFromItem(item); data) {
+                    auto [categoryID, noteID] = *data;
+                    auto dialog = new TreeDialog(categoryID);
+                    if (dialog->exec() == QDialog::Accepted) {
+                        moveNoteToCategoryWithID(noteID, dialog->selectedCategoryID());
                     }
                 }
             }
@@ -116,11 +115,11 @@ void NotesTable::customEvent(QEvent* const event) {
 /// Wyświetlamy wszystkie notatki dla wskazanej kategorii
 /// oraz wszystkich jej podkategorii (jeśli istnieją).
 void NotesTable::
-update_content_for(i64 const category_id) noexcept {
+updateContentForCategoryWithID(i64 const categoryID) noexcept {
     // Usunięcie wszystkich wierszy w tabeli.
-    clear_content();
+    clearContent();
 
-    if (auto ids = Category::ids_subchain_for(category_id); not ids.empty()) {
+    if (auto ids = Category::ids_subchain_for(categoryID); not ids.empty()) {
         if (auto notes = Note::notes(std::move(ids)); not notes.empty()) {
             setRowCount(int(notes.size()));
             auto row = 0;
@@ -139,7 +138,7 @@ update_content_for(i64 const category_id) noexcept {
     horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     resizeColumnToContents(1);
 //    horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
-    categoryID_ = category_id;
+    categoryID_ = categoryID;
 
     update();
 }
@@ -156,13 +155,13 @@ row_with_id(qint64 id) const noexcept {
 }
 
 void NotesTable::
-delete_note(qi64 const noteID) noexcept {
-    if (auto note = Note::with_id(noteID); note) {
+deleteNoteWithID(qi64 const noteID) noexcept {
+    if (auto note = Note::withID(noteID); note) {
         auto dialog = std::make_unique<DeleteNoteDialog>(*note, this);
         if (dialog->exec() == QDialog::Accepted) {
             auto row_nr = currentRow();
             if (Note::remove(noteID)) {
-                update_content_for(categoryID_);
+                updateContentForCategoryWithID(categoryID_);
                 // Wybieramy wiersz o takim samym indeksie jeśli jest taki.
                 // Lub ostatni wiersz.
                 if (row_nr >= rowCount())
@@ -174,6 +173,23 @@ delete_note(qi64 const noteID) noexcept {
 }
 
 void NotesTable::
-move_note(i64 noteID, i64 destinationCategoryID) const noexcept {
-
+moveNoteToCategoryWithID(i64 noteID, i64 destinationCategoryID) noexcept {
+    if (auto note = Note::withID(noteID); note) {
+        // Nowa kategoria nie może już zawierać notatki o takim samym tytule.
+        if (Note::containsParentTheNoteWithTitle(destinationCategoryID, (*note).title())) {
+            QMessageBox::critical(this, "Illegal note title.", "The selected category already contains a note with this title.");
+            return;
+        }
+        // Błąd zapisu do bazy danych.
+        note->pid(destinationCategoryID);
+        if (not note->save()) {
+            QMessageBox::critical(this, "Database error", "Error updating note in database.");
+            return;
+        }
+        EventController::instance().send(event::CategorySelected,
+                                         note->pid<qi64>());
+        EventController::instance().send(event::NoteDatabaseChanged,
+                                         note->pid<qi64>(),
+                                         note->id<qi64>());
+    }
 }

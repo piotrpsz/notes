@@ -27,6 +27,7 @@
 -------------------------------------------------------------------*/
 #include <QTreeWidget>
 #include "../shared.hh"
+#include <optional>
 
 /*------- forward declarations:
 -------------------------------------------------------------------*/
@@ -42,10 +43,10 @@ class CategoryTreeBrowser : public QTreeWidget {
 public:
     explicit CategoryTreeBrowser(i64 categoryID, QWidget* = nullptr);
     ~CategoryTreeBrowser() override = default;
+    std::optional<i64> selectedCategoryID() const noexcept;
 
 private:
-    void populate_content() noexcept;
-    void add_items_for(QTreeWidgetItem* item) noexcept;
-    i64 selectedID() const noexcept;
-    static QTreeWidgetItem* child_with_id_for(QTreeWidgetItem* parent, i64 id) noexcept;
+    void populateDialogContent() noexcept;
+    void addItemsFor(QTreeWidgetItem* item) noexcept;
+    static QTreeWidgetItem* childOfParentWithID(QTreeWidgetItem* parent, i64 id) noexcept;
 };

@@ -320,7 +320,7 @@ category_dialog(Category&& category, bool const rename) noexcept {
 void CategoryTree::
 add_items_for(QTreeWidgetItem* const parent) noexcept {
     auto const pid = parent->data(0, IdRole).toInt();
-    auto childs = store_->childs(pid);
+    auto childs = store_->childsForParentWithID(pid);
     std::ranges::sort(childs, [](auto const& a, auto const& b) {
        return QString::compare(a.qname(), b.qname(), Qt::CaseInsensitive) < 0;
     });

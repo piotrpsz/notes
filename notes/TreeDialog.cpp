@@ -42,7 +42,8 @@ TreeDialog::TreeDialog(i64 categoryID, QWidget* const parent) :
        reject();
     });
     connect(select, &QPushButton::clicked, [this] {
-
+        if (auto categoryID = tree_->selectedCategoryID())
+            selectedCategoryID_ = categoryID.value();
         accept();
     });
 

@@ -25,8 +25,8 @@ CategoryTreeBrowser::CategoryTreeBrowser(i64 categoryID, QWidget* const parent) 
     setColumnCount(1);
     setHorizontalScrollMode(ScrollPerPixel);
 
-    populate_content();
-    if (auto item = child_with_id_for(root_, categoryID); item) {
+    populateDialogContent();
+    if (auto item = childOfParentWithID(root_, categoryID); item) {
         auto parent = item->parent();
         while (parent) {
             if (not parent->isExpanded())
@@ -38,7 +38,7 @@ CategoryTreeBrowser::CategoryTreeBrowser(i64 categoryID, QWidget* const parent) 
 }
 
 void CategoryTreeBrowser::
-populate_content() noexcept {
+populateDialogContent() noexcept {
     clear();
 
     delete store_;
@@ -51,28 +51,33 @@ populate_content() noexcept {
     root_->setData(0, IdRole, 0);
     root_->setData(0, PidRole, 0);
 
-    add_items_for(root_);
+    addItemsFor(root_);
     root_->setExpanded(true);
 }
 
 void CategoryTreeBrowser::
-add_items_for(QTreeWidgetItem* const parent) noexcept {
+addItemsFor(QTreeWidgetItem* const parent) noexcept {
     auto const pid = parent->data(0, IdRole).toInt();
-    auto childs = store_->childs(pid);
+    auto childs = store_->childsForParentWithID(pid);
+
+    // Sortowanie potomków alfabetycznie rosnąco w/g nazwy
     std::ranges::sort(childs, [](auto const& a, auto const& b) {
         return QString::compare(a.qname(), b.qname(), Qt::CaseInsensitive) < 0;
     });
+
+    // Dodanie potomków do przodka w drzewie.
+    // Rekursywnie odczytujemy pod-potomków dla każdego z potomków.
     std::ranges::for_each(childs, [parent, this](auto const& category) {
         auto const item = new QTreeWidgetItem(parent);
         item->setText(0, category.qname());
         item->setData(0, IdRole, category.qid());
         item->setData(0, PidRole, category.qpid());
-        add_items_for(item);
+        addItemsFor(item);
     });
 }
 
 QTreeWidgetItem* CategoryTreeBrowser::
-child_with_id_for(QTreeWidgetItem* parent, i64 id) noexcept {
+childOfParentWithID(QTreeWidgetItem* parent, i64 id) noexcept {
     for (auto it = QTreeWidgetItemIterator{parent}; *it; ++it) {
         auto const item = *it;
         i64 const item_id = item->data(0, IdRole).toInt();
@@ -82,9 +87,12 @@ child_with_id_for(QTreeWidgetItem* parent, i64 id) noexcept {
     return nullptr;
 }
 
-i64 CategoryTreeBrowser::
-selectedID() const noexcept {
+std::optional<i64> CategoryTreeBrowser::
+selectedCategoryID() const noexcept {
     if (auto item = currentItem(); item) {
-
+        if (auto itemID = item->data(0, IdRole); itemID.canConvert<int>()) {
+            return itemID.toInt();
+        }
     }
+    return {};
 }

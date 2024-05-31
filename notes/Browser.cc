@@ -58,7 +58,7 @@ void Browser::customEvent(QEvent* const event) {
             if (auto data = e->data(); data.size() == 1) {
                 if (auto value = data[0]; value.canConvert<int>()) {
                     auto noteID = value.toInt();
-                    if (auto note = Note::with_id(noteID); note) {
+                    if (auto note = Note::withID(noteID); note) {
                         auto html = (*note).qcontent();
                         setHtml(html);
                     }

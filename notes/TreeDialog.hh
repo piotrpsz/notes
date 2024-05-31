@@ -27,6 +27,7 @@
 -------------------------------------------------------------------*/
 #include <QDialog>
 #include "../shared.hh"
+#include <optional>
 
 /*------- forward declaration:
 -------------------------------------------------------------------*/
@@ -36,11 +37,14 @@ class QShowEvent;
 class TreeDialog : public QDialog {
     Q_OBJECT
     CategoryTreeBrowser* const tree_;
-    i64 selected_category_{-1};
+    i64 selectedCategoryID_{-1};
 public:
-    TreeDialog(i64 categoryID, QWidget* = nullptr);
+    explicit TreeDialog(i64 categoryID, QWidget* = nullptr);
     ~TreeDialog() override = default;
 
+    i64 selectedCategoryID() const noexcept {
+        return selectedCategoryID_;
+    }
 private:
     void showEvent(QShowEvent*) override;
 };

@@ -28,9 +28,11 @@ public:
     ~Note() = default;
 
     static bool remove(i64 id) noexcept;
-    static std::optional<Note> with_id(i64 id, std::string const& fields = "*") noexcept;
+    static std::optional<Note> withID(i64 id, std::string const& fields = "*") noexcept;
     static std::vector<Note> notes(std::vector<i64> ids) noexcept;
+    static bool containsParentTheNoteWithTitle(i64 categoryID, std::string const& title) noexcept;
 
+    [[nodiscard]] std::string const& title() const noexcept { return title_; }
     [[nodiscard]] QString qtitle() const noexcept { return QString::fromStdString(title_); }
     [[nodiscard]] QString qdescription() const noexcept { return QString::fromStdString(description_); }
     [[nodiscard]] QString qcontent() const noexcept { return QString::fromStdString(content_); }
@@ -44,10 +46,15 @@ public:
         return static_cast<T>(pid_);
     }
 
+//    Note& pid(i64 const value) noexcept {
+//        pid_ = value;
+//        return *this;
+//    }
     Note& pid(qi64 const value) noexcept {
-        pid_ = value;
+        pid_ = i64(value);
         return *this;
     }
+
     Note& title(qstr const& txt) noexcept {
         title_ = txt.toStdString();
         return *this;

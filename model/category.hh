@@ -54,6 +54,7 @@ public:
     static std::vector<Category> with_pid(i64 pid, std::string const& fields = "*") noexcept;
     static std::optional<std::string> name_with_id(i64 id) noexcept;
     static std::optional<std::vector<Category>> all() noexcept;
+    static bool existNoteWithTitle(i64 categoryID, std::string const& title) noexcept;
 
 
 

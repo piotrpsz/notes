@@ -109,7 +109,7 @@ void NotesWorkspace::new_note(qi64 const categoryID) noexcept {
 /// Edycja istniejącej już notatki.
 /// \param noteID - numer ID notatki do edycji.
 void NotesWorkspace::edit_note(qi64 const noteID) noexcept {
-    if (auto note = Note::with_id(noteID); note) {
+    if (auto note = Note::withID(noteID); note) {
         auto dialog = std::make_unique<EditDialog>(std::move(*note));
         if (dialog->exec() == QDialog::Accepted) {
             auto changed_note = dialog->get_note();
