@@ -38,6 +38,8 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QStandardItem>
+#include <QVariant>
+#include <QColor>
 #include <fmt/core.h>
 
 /// Edycja istniejącej notatki. \n
@@ -143,10 +145,6 @@ EditDialog::EditDialog(QWidget *const parent) :
     buttons->addWidget(acceptPushButton_);
     acceptPushButton_->setDefault(true);
 
-    auto const separator{new QFrame};
-    separator->setFrameShape(QFrame::HLine);
-    separator->setFrameShadow(QFrame::Sunken);
-
     auto layout = new QGridLayout;
     layout->setContentsMargins(8, 8, 8, 4);
 
@@ -157,11 +155,27 @@ EditDialog::EditDialog(QWidget *const parent) :
     layout->addWidget(title_, row++, 1);
     layout->addWidget(new QLabel("Description"), row, 0);
     layout->addWidget(description_, row++, 1);
-    layout->addWidget(separator, row++, 0, 1, 2);
-    layout->addLayout(editor_layout(), row++, 0, 1, 2);
+    layout->addWidget(horizontalSeparator(), row++, 0, 1, 2);
+    layout->addLayout(editorLayout(), row++, 0, 1, 2);
     layout->addLayout(buttons, row, 0, 1, 2);
 
     setLayout(layout);
+
+    // Sizes - ComboBox action
+    connect(sizesComboBox_, &QComboBox::currentTextChanged, [this](auto text) {
+        editor_->setFontPointSize(text.toInt());
+        editor_->setFocus();
+    });
+    // Colors - ComboBox action
+    connect(colorsComboBox_, &QComboBox::currentIndexChanged, [this](auto index) {
+        if (index > 0) {
+            auto const  v = colorsComboBox_->itemData(index, ColorRole);
+            auto const textColor = QColor::fromRgba(v.toUInt());
+            editor_->setTextColor(textColor);
+            editor_->setFocus();
+        }
+    });
+
 }
 
 void EditDialog::
@@ -172,8 +186,8 @@ showEvent(QShowEvent *e) {
     QDialog::showEvent(e);
 }
 
-QVBoxLayout *EditDialog::
-editor_layout() const noexcept {
+QVBoxLayout* EditDialog::
+editorLayout() const noexcept {
     // https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
 
     auto const toolbar{new QToolBar};
@@ -254,6 +268,11 @@ populateColorsComboBox() const noexcept {
     colorsComboBox_->setItemData(2, color1, Qt::ForegroundRole);
     colorsComboBox_->setItemData(3, color2, Qt::ForegroundRole);
     colorsComboBox_->setItemData(4, color3, Qt::ForegroundRole);
+
+    colorsComboBox_->setItemData(1, color0.rgba(), ColorRole);
+    colorsComboBox_->setItemData(2, color1.rgba(), ColorRole);
+    colorsComboBox_->setItemData(3, color2.rgba(), ColorRole);
+    colorsComboBox_->setItemData(4, color3.rgba(), ColorRole);
 }
 
 void EditDialog::

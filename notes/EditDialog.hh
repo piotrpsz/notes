@@ -26,6 +26,7 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include <QDialog>
+#include <QFrame>
 #include "../shared.hh"
 #include "../model/note.hh"
 #include <optional>
@@ -41,7 +42,7 @@ class QLabel;
 
 class EditDialog : public QDialog {
     Q_OBJECT
-    enum { FaceRole = Qt::UserRole+1 };
+    enum { FaceRole = Qt::UserRole+1, ColorRole = Qt::UserRole+1 };
     enum { Normal = 0x0, Bold = 0x1, Italic = 0x2, Underline = 0x4 };
     QLineEdit* const title_;
     QLineEdit* const description_;
@@ -77,11 +78,18 @@ private:
     void populateSizesComboBox() const noexcept;
     void populateFacesComboBox() const noexcept;
     void populateColorsComboBox() const noexcept;
-    [[nodiscard]] QVBoxLayout* editor_layout() const noexcept;
-    static QWidget* spacer() noexcept {
+    [[nodiscard]] QVBoxLayout* editorLayout() const noexcept;
+
+    static inline QWidget* spacer() noexcept {
         auto spacer = new QWidget;
         spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         return spacer;
+    }
+    static inline QFrame* horizontalSeparator() noexcept {
+        auto const separator{new QFrame};
+        separator->setFrameShape(QFrame::HLine);
+        separator->setFrameShadow(QFrame::Sunken);
+        return separator;
     }
 
     static inline QColor const color0{0xcf, 0x8e, 0x6d};
