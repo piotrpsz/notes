@@ -40,12 +40,13 @@ NotesTable::NotesTable(QWidget* const parent) :
         QTableWidget(parent)
 {
     setRowCount(0);
-    setColumnCount(2);
+    setColumnCount(3);
     setEditTriggers(NoEditTriggers);
     setSelectionBehavior(SelectRows);
 
     setHorizontalHeaderItem(0, new QTableWidgetItem("Title"));
     setHorizontalHeaderItem(1, new QTableWidgetItem("Description"));
+    setHorizontalHeaderItem(2, new QTableWidgetItem("Category"));
 //    horizontalHeader()->setStretchLastSection(false);
 
     EventController::instance().append(this,
@@ -139,12 +140,17 @@ updateContentForCategoryWithID(i64 const categoryID) noexcept {
 
                 auto const item1 = new QTableWidgetItem(note.qdescription());
                 setItem(row, 1, item1);
+
+                auto const item2 = new QTableWidgetItem(note.qcategory());
+                setItem(row, 2, item2);
+
                 ++row;
             }
         }
     }
     horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     resizeColumnToContents(1);
+    resizeColumnToContents(2);
 //    horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
     categoryID_ = categoryID;
 

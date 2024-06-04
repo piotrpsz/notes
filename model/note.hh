@@ -18,6 +18,7 @@ class Note {
     std::string title_{};
     std::string description_{};
     std::string content_{};
+    std::string category_{};
 public:
     Note() = default;
     explicit Note(Row&& row);
@@ -36,6 +37,7 @@ public:
     [[nodiscard]] QString qtitle() const noexcept { return QString::fromStdString(title_); }
     [[nodiscard]] QString qdescription() const noexcept { return QString::fromStdString(description_); }
     [[nodiscard]] QString qcontent() const noexcept { return QString::fromStdString(content_); }
+    [[nodiscard]] QString qcategory() const noexcept { return QString::fromStdString(category_); }
 
     template<std::integral T>
     T id() const noexcept {
@@ -46,10 +48,6 @@ public:
         return static_cast<T>(pid_);
     }
 
-//    Note& pid(i64 const value) noexcept {
-//        pid_ = value;
-//        return *this;
-//    }
     Note& pid(qi64 const value) noexcept {
         pid_ = i64(value);
         return *this;
@@ -67,6 +65,7 @@ public:
         content_ = txt.toStdString();
         return *this;
     }
+
     bool save() noexcept { return (id_ == 0) ? insert() : update(); }
     bool insert() noexcept;
     bool update() noexcept;

@@ -20,6 +20,9 @@ Note::Note(Row &&row) {
         description_ = (*f).value().str();
     if (auto f = row["content"]; f)
         content_ = (*f).value().str();
+    if (auto f = row["name"]; f)
+        category_ = (*f).value().str();
+    fmt::print("category: {}\n", category_);
 }
 
 bool Note::
@@ -27,6 +30,10 @@ remove(i64 const id) noexcept {
     return SQLite::instance().exec("DELETE FROM note WHERE id=?", id);
 }
 
+/// Sprawdzenie czy wskazama kategoria posiada notatkę z podanum tytułem.
+/// \param categoryID - numer ID sprawdzanej kategorii
+/// \param title - tytuł poszukiwanej notatki.
+/// \return True jeśli znaleziono notatkę, False w przeciwnym przypadku
 bool Note::
 containsParentTheNoteWithTitle(i64 categoryID, std::string const& title) noexcept {
     auto countQuery = "SELECT COUNT(*) as count FROM note WHERE pid=? AND title=?";
@@ -42,10 +49,10 @@ containsParentTheNoteWithTitle(i64 categoryID, std::string const& title) noexcep
     return {};
 }
 
-/// Odczyt rekordu z notatką z podanym ID.
+/// Odczyt danych notatki posiadającej wskazany numer ID.
 std::optional<Note> Note::
 withID(i64 const noteID, std::string const &fields) noexcept {
-    auto selectQuery = fmt::format("SELECT {} FROM note WHERE id=?", fields);
+    auto selectQuery = fmt::format("SELECT note.*, category.name FROM note INNER JOIN category ON category.id=note.pid WHERE note.id=?");
     if (auto result = SQLite::instance().select(selectQuery, noteID); result)
         if (auto data = *result; data.size() == 1)
             return Note(data[0]);
@@ -53,6 +60,9 @@ withID(i64 const noteID, std::string const &fields) noexcept {
     return {};
 }
 
+/// Dodanie do bazy danych wiersza z nową notatką.
+/// \return True jeśli zapis zakończył się sukcesem, False w przeciwnym przypadku.
+/// \remark Po zapisie zakończonym sukcesem zapamiętujemy numer ID.
 bool Note::
 insert() noexcept {
     using namespace std::string_literals;
@@ -64,6 +74,8 @@ insert() noexcept {
     return {};
 }
 
+/// Uaktualnienie danych notatki. \n
+/// Wiersz z danymi notatki identyfikowany jest przez jej numer ID.
 bool Note::
 update() noexcept {
     using namespace std::string_literals;
@@ -71,7 +83,7 @@ update() noexcept {
     return SQLite::instance().update(cmd, pid_, title_, description_, content_, id_);
 }
 
-// Odczyt z bazy danych notatek których numery ID są podane jako argument w wektorze 'ids'.
+/// Odczyt z bazy danych notatek których numery ID są podane jako argument w wektorze 'ids'.
 std::vector<Note> Note::
 notes(std::vector<i64> ids) noexcept {
     // konwersja liczb na tekst
@@ -89,9 +101,9 @@ notes(std::vector<i64> ids) noexcept {
             });
 
 
-
+// "SELECT note.*, category.name FROM note INNER JOIN category ON category.id=note.pid WHERE note.id=?"
     std::vector<Note> vec{};
-    auto cmd = fmt::format("SELECT * FROM note WHERE pid IN ({})", acc);
+    auto cmd = fmt::format("SELECT note.*, category.name FROM note INNER JOIN category ON category.id=note.pid WHERE note.pid IN ({})", acc);
 
     if (auto opt = SQLite::instance().select(cmd); opt) {
         for (auto row : opt.value()) {
