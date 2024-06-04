@@ -69,17 +69,25 @@ NotesTable::NotesTable(QWidget* const parent) :
     });
 }
 
+NotesTable::~NotesTable() {
+    EventController::instance().remove(this);
+}
+
 void NotesTable::customEvent(QEvent* const event) {
     auto const e = dynamic_cast<Event *>(event);
     switch (int(e->type())) {
         case event::CategorySelected:
             clearContent();
             if (auto data = e->data(); not data.empty()) {
-                if (auto value = data[0]; value.canConvert<int>()) {
-                    updateContentForCategoryWithID(value.toInt());
-                    auto m = model();
-                    selectRow(0);
+                auto const categoryID{data[0].toInt()};
+                updateContentForCategoryWithID(categoryID);
+                if (data.size() == 2) {
+                    auto const noteID{data[1].toInt()};
+                    if (auto item = rowWithID(noteID); item)
+                        setCurrentItem(item);
                 }
+                else
+                    selectRow(0);
             }
             break;
         case event::NoteDatabaseChanged:
@@ -87,7 +95,7 @@ void NotesTable::customEvent(QEvent* const event) {
             if (auto data = e->data(); data.size() == 2) {
                 updateContentForCategoryWithID(data[0].toInt());
                 auto noteID = data[1].toInt();
-                if (auto item = row_with_id(noteID); item)
+                if (auto item = rowWithID(noteID); item)
                     setCurrentItem(item);
             }
             break;
@@ -98,7 +106,7 @@ void NotesTable::customEvent(QEvent* const event) {
             }
             break;
         case event::MoveCurrentNoteRequest:
-            if (auto item = currentItem(); item) {
+            if (auto item = currentItemWhenFocus(); item) {
                 if (auto data = dataFromItem(item); data) {
                     auto [categoryID, noteID] = *data;
                     auto dialog = new TreeDialog(categoryID);
@@ -144,7 +152,7 @@ updateContentForCategoryWithID(i64 const categoryID) noexcept {
 }
 
 QTableWidgetItem* NotesTable::
-row_with_id(qint64 id) const noexcept {
+rowWithID(qint64 id) const noexcept {
     int const rows = model()->rowCount();
     for (int i = 0; i < rows; ++i) {
         auto const row = item(i, 0);
@@ -186,9 +194,7 @@ moveNoteToCategoryWithID(i64 noteID, i64 destinationCategoryID) noexcept {
             QMessageBox::critical(this, "Database error", "Error updating note in database.");
             return;
         }
-        EventController::instance().send(event::CategorySelected,
-                                         note->pid<qi64>());
-        EventController::instance().send(event::NoteDatabaseChanged,
+        EventController::instance().send(event::CategoryAndNoteToSelect,
                                          note->pid<qi64>(),
                                          note->id<qi64>());
     }

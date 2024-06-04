@@ -46,7 +46,7 @@ class NotesTable : public QTableWidget {
 public:
     explicit NotesTable(QWidget * = nullptr);
 
-    ~NotesTable() override = default;
+    ~NotesTable() override;
 
 private:
     /// Odbieranie zdefiniowanych w programie zdarzeń.
@@ -64,13 +64,14 @@ private:
         setRowCount(0);
     }
 
-    [[nodiscard]] QTableWidgetItem* currentItem() const noexcept {
+    [[nodiscard]] QTableWidgetItem* currentItemWhenFocus() const noexcept {
         if (hasFocus())
             return item(currentRow(), 0);
         return {};
     }
 
-    std::optional<std::pair<i64, i64>> dataFromItem(QTableWidgetItem *const item) const noexcept {
+    static std::optional<std::pair<i64, i64>>
+    dataFromItem(QTableWidgetItem *const item) noexcept {
         i64 noteID{-1}, categoryID{-1};
 
         if (auto data = item->data(CategoryID); data.isValid() && data.canConvert<int>())
@@ -83,7 +84,7 @@ private:
         return {};
     }
 
-    [[nodiscard]] QTableWidgetItem *row_with_id(qint64 id) const noexcept;
+    [[nodiscard]] QTableWidgetItem* rowWithID(qint64 id) const noexcept;
 
     void moveNoteToCategoryWithID(i64 noteID, i64 destinationCategoryID) noexcept;
 };

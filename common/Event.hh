@@ -54,6 +54,8 @@ public:
 namespace event {
     enum {
         CategorySelected = (QEvent::User + 1),
+        CategoryAndNoteToSelect,
+//        NoteToSelect,/
         NewNoteRequest,
         EditNoteRequest,
         RemoveCurrentNoteRequest,

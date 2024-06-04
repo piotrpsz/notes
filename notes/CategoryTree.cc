@@ -69,8 +69,13 @@ CategoryTree::CategoryTree(QWidget* const parent) :
     timer_->setSingleShot(true);
     connect(timer_, &QTimer::timeout, [this]() {
         if (auto current_item = currentItem(); current_item) {
-            auto const id{current_item->data(0, IdRole).toInt()};
-            EventController::instance().send(event::CategorySelected, id);
+            auto const categoryID{current_item->data(0, IdRole).toInt()};
+            if (noteID_ != -1) {
+                EventController::instance().send(event::CategorySelected, categoryID, qi64(noteID_));
+                noteID_ = -1;
+            }
+            else
+                EventController::instance().send(event::CategorySelected, categoryID);
         }
     });
 
@@ -90,6 +95,25 @@ CategoryTree::CategoryTree(QWidget* const parent) :
 
     update_content();
     setCurrentItem(root_);
+    EventController::instance().append(this, event::CategoryAndNoteToSelect);
+}
+
+CategoryTree::~CategoryTree() {
+    EventController::instance().remove(this);
+}
+
+void CategoryTree::
+customEvent(QEvent* const event) {
+    auto const e = dynamic_cast<Event *>(event);
+    switch (int(e->type())) {
+        case event::CategoryAndNoteToSelect:
+            if (auto data = e->data(); data.size() == 2) {
+                auto const categoryID{data[0].toInt()};
+                auto const noteID{data[1].toInt()};
+                expandAndSelectChildFor(categoryID, noteID);
+            }
+            break;
+    }
 }
 
 /// Utworzenie drzewa kategorii od nowa.
@@ -178,20 +202,25 @@ new_subcategory() noexcept {
                 auto expanded = expanded_items();
                 update_content();
                 expanded_items(std::move(expanded));
-
-                // nowo utworzona podkategoria zostaje automatycznie wybrana
-                if (auto item = child_with_id_for(root_, id); item) {
-                    // Rozwijamy parent, aby nasza kategoria była widziana.
-                    auto parent = item->parent();
-                    while (parent) {
-                        if (!parent->isExpanded())
-                            expandItem(parent);
-                        parent = parent->parent();
-                    }
-                    setCurrentItem(item);
-                }
+                expandAndSelectChildFor(id);
             }
         }
+    }
+}
+
+void CategoryTree::
+expandAndSelectChildFor(i64 const categoryID, i64 const noteID) noexcept {
+    if (auto item = child_with_id_for(root_, categoryID); item) {
+        // Rozwijamy parent, aby nasza kategoria była widziana.
+        auto parent = item->parent();
+        while (parent) {
+            if (!parent->isExpanded())
+                expandItem(parent);
+            parent = parent->parent();
+        }
+        if (noteID != -1)
+            noteID_ = noteID;
+        setCurrentItem(item);
     }
 }
 

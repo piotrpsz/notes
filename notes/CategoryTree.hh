@@ -35,6 +35,7 @@
 /*------- forward declarations:
 -------------------------------------------------------------------*/
 class QTimer;
+class QEvent;
 class QMouseEvent;
 class QTreeWidgetItem;
 
@@ -43,13 +44,16 @@ class QTreeWidgetItem;
 class CategoryTree : public QTreeWidget {
     Q_OBJECT
     enum { IdRole = Qt::UserRole+1, PidRole};
+    i64 noteID_{-1};
 public:
     explicit CategoryTree(QWidget* = nullptr);
-    ~CategoryTree() override = default;
+    ~CategoryTree() override;
 
 private:
     void mousePressEvent(QMouseEvent*) override;
+    void customEvent(QEvent*) override;
 
+    void expandAndSelectChildFor(i64 categoryID, i64 noteID = -1) noexcept;
     static std::optional<Category> category_dialog(Category&& category, bool rename = false) noexcept;
     void add_items_for(QTreeWidgetItem* item) noexcept;
     static Category category_from(QTreeWidgetItem const*) noexcept;
