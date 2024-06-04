@@ -47,13 +47,13 @@ class EditDialog : public QDialog {
     QLineEdit* const description_;
     Editor* const editor_;
     std::optional<Note> note_{};
-    i64 note_id_{};
-    QComboBox* const size_cbox_;
-    QComboBox* const font_face_cbx_;
-    QComboBox* const color_cbx_;
-    QPushButton* const accept_btn_;
-    QPushButton* const cancel_btn_;
-    QLabel* const chain_info_;
+    i64 noteID_{};
+    QComboBox* const sizesComboBox_;
+    QComboBox* const facesComboBox_;
+    QComboBox* const colorsComboBox_;
+    QPushButton* const acceptPushButton_;
+    QPushButton* const cancelPushButton_;
+    QLabel* const chainInfoLabel_;
 
 public:
     explicit EditDialog(qi64 category_id, QWidget* = nullptr);
@@ -66,7 +66,7 @@ public:
 
     template<std::integral T>
     T note_id() const noexcept {
-        return static_cast<T>(note_id_);
+        return static_cast<T>(noteID_);
     }
 
 private:
@@ -74,9 +74,9 @@ private:
     bool valid() noexcept;
 
     void showEvent(QShowEvent*) override;
-    void populate_font_size_cbx() const noexcept;
-    void populate_font_face_cbx() const noexcept;
-    void populate_color_cbx() const noexcept;
+    void populateSizesComboBox() const noexcept;
+    void populateFacesComboBox() const noexcept;
+    void populateColorsComboBox() const noexcept;
     [[nodiscard]] QVBoxLayout* editor_layout() const noexcept;
 
     static inline QColor const color0{0xcf, 0x8e, 0x6d};

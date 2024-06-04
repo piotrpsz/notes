@@ -32,7 +32,7 @@ public:
         }
     }
 
-    bool has_subcategories(i64 const id) noexcept {
+    bool hasSubcategories(i64 const id) noexcept {
         return not data_[id].empty();
     }
     bool exist(i64 const pid, std::string const& name) noexcept {

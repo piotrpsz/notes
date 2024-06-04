@@ -38,6 +38,7 @@ class QSplitter;
 -------------------------------------------------------------------*/
 class MainWindow : public QMainWindow {
     Q_OBJECT
+    static constexpr int SPLITTER_HANDLE_WIDTH = 1;
 public:
     explicit MainWindow(QWidget* = nullptr);
     ~MainWindow() override = default;
@@ -47,7 +48,7 @@ private:
     void closeEvent(QCloseEvent*) override;
 
 private:
-    bool first_show_{true};
+    bool firstTimeShow_{true};
     QSplitter* const splitter_;
 
     static inline qstr const MainWindowSizeKey = "MainWindow/Size";

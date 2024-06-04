@@ -27,11 +27,11 @@ CategoryTreeBrowser::CategoryTreeBrowser(i64 categoryID, QWidget* const parent) 
 
     populateDialogContent();
     if (auto item = childOfParentWithID(root_, categoryID); item) {
-        auto parent = item->parent();
-        while (parent) {
-            if (not parent->isExpanded())
-                expandItem(parent);
-            parent = parent->parent();
+        auto parentItem = item->parent();
+        while (parentItem) {
+            if (not parentItem->isExpanded())
+                expandItem(parentItem);
+            parentItem = parentItem->parent();
         }
         setCurrentItem(item);
     }

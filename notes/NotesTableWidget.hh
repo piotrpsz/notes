@@ -31,7 +31,7 @@
 class NotesTableWidget : public QWidget {
     Q_OBJECT
 public:
-    NotesTableWidget(QWidget* = nullptr);
+    explicit NotesTableWidget(QWidget* = nullptr);
     ~NotesTableWidget() override = default;
 
 };

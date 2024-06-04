@@ -53,21 +53,38 @@ private:
     void mousePressEvent(QMouseEvent*) override;
     void customEvent(QEvent*) override;
 
-    void expandAndSelectChildFor(i64 categoryID, i64 noteID = -1) noexcept;
-    static std::optional<Category> category_dialog(Category&& category, bool rename = false) noexcept;
-    void add_items_for(QTreeWidgetItem* item) noexcept;
-    static Category category_from(QTreeWidgetItem const*) noexcept;
-    [[nodiscard]] bool already_exist(i64 pid, std::string const& name) const noexcept;
-    static QTreeWidgetItem* child_with_id_for(QTreeWidgetItem* parent, i64 id) noexcept;
-    void update_content() noexcept;
-    [[nodiscard]] std::unordered_set<i64> expanded_items() const noexcept;
-    void expanded_items(std::unordered_set<i64>&& ids) noexcept;
+    void
+    expandAndSelectChildFor(i64 categoryID, i64 noteID = -1) noexcept;
+
+    static std::optional<Category>
+    categoryDialog(Category&& category, bool rename = false) noexcept;
+
+    void
+    addItemsFor(QTreeWidgetItem* item) noexcept;
+
+    static Category
+    categoryFrom(QTreeWidgetItem const*) noexcept;
+
+    [[nodiscard]] bool
+    alreadyExist(i64 pid, std::string const& name) const noexcept;
+
+    static QTreeWidgetItem*
+    childWithID(QTreeWidgetItem* parent, i64 id) noexcept;
+
+    void
+    updateContent() noexcept;
+
+    [[nodiscard]] std::unordered_set<i64>
+    fetchExpandedItems() const noexcept;
+
+    void
+    restoreExpandedItems(std::unordered_set<i64>&& ids) noexcept;
 
 private slots:
-    void new_subcategory() noexcept;
-    void new_main_category() noexcept;
+    void newSubcategory() noexcept;
+    void newMainCategory() noexcept;
     void remove_category() noexcept;
-    void edit_item() noexcept;
+    void editItem() noexcept;
 
 private:
     QTreeWidgetItem* root_{};

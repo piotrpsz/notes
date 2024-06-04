@@ -42,6 +42,7 @@ class QTableWidgetItem;
 class NotesTable : public QTableWidget {
     Q_OBJECT
     enum { NoteID = Qt::UserRole + 1, CategoryID };
+    static constexpr int COLUMN_COUNT = 3;
     i64 categoryID_{};
 public:
     explicit NotesTable(QWidget * = nullptr);

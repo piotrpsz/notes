@@ -44,8 +44,7 @@ public:
 
 private:
     void customEvent(QEvent*) override;
-    void update_category_chain_info() noexcept;
-    std::optional<std::string> category_chain_;
-    QLabel* const chain_info_;
-    i64 current_category_id_{};
+    std::optional<std::string> categoryChain_;
+    QLabel* const categoryChainLabel_;
+    i64 currentCategoryID_{};
 };

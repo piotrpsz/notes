@@ -40,14 +40,13 @@ NotesTable::NotesTable(QWidget* const parent) :
         QTableWidget(parent)
 {
     setRowCount(0);
-    setColumnCount(3);
+    setColumnCount(COLUMN_COUNT);
     setEditTriggers(NoEditTriggers);
     setSelectionBehavior(SelectRows);
 
     setHorizontalHeaderItem(0, new QTableWidgetItem("Title"));
     setHorizontalHeaderItem(1, new QTableWidgetItem("Description"));
     setHorizontalHeaderItem(2, new QTableWidgetItem("Category"));
-//    horizontalHeader()->setStretchLastSection(false);
 
     EventController::instance().append(this,
                                        event::CategorySelected,
@@ -56,13 +55,15 @@ NotesTable::NotesTable(QWidget* const parent) :
                                        event::NoteDatabaseChanged);
 
 
-    connect(this, &QTableWidget::currentItemChanged, [&] (QTableWidgetItem* currentItem, auto){
+    // Użytkownik wybrał nowy wiersz.
+    connect(this, &QTableWidget::currentItemChanged, [&] (QTableWidgetItem* const currentItem, auto){
         if (currentItem) {
             if (auto noteID = currentItem->data(NoteID); noteID.canConvert<int>())
                 EventController::instance().send(event::NoteSelected, noteID.toInt());
         }
     });
-    connect(this, &QTableWidget::cellDoubleClicked, [&] (auto row, auto col){
+    // Użytkownik dwa razy kliknął myszką wiersz.
+    connect(this, &QTableWidget::cellDoubleClicked, [&] (auto const row, auto const col){
         if (auto selected_item = item(row, 0); selected_item) {
             auto noteID = selected_item->data(NoteID).toInt();
             EventController::instance().send(event::EditNoteRequest, noteID);
@@ -128,7 +129,7 @@ updateContentForCategoryWithID(i64 const categoryID) noexcept {
     // Usunięcie wszystkich wierszy w tabeli.
     clearContent();
 
-    if (auto ids = Category::ids_subchain_for(categoryID); not ids.empty()) {
+    if (auto ids = Category::idsSubchainFor(categoryID); not ids.empty()) {
         if (auto notes = Note::notes(std::move(ids)); not notes.empty()) {
             setRowCount(int(notes.size()));
             auto row = 0;

@@ -22,7 +22,6 @@ Note::Note(Row &&row) {
         content_ = (*f).value().str();
     if (auto f = row["name"]; f)
         category_ = (*f).value().str();
-    fmt::print("category: {}\n", category_);
 }
 
 bool Note::

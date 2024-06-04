@@ -38,6 +38,8 @@ class QEvent;
 -------------------------------------------------------------------*/
 class NotesWorkspace : public QSplitter {
     Q_OBJECT
+    static double constexpr PERCENTAGE_WIDTH = 60. / 100.;
+    static int constexpr SPLITTER_HANDLE_WIDTH = 1;
 public:
     explicit NotesWorkspace(QWidget* = nullptr);
     ~NotesWorkspace() override;
@@ -45,10 +47,10 @@ public:
 private:
     void showEvent(QShowEvent*) override;
     void customEvent(QEvent*) override;
-    static void new_note(qi64 categoryID) noexcept;
-    static void edit_note(qi64 noteID) noexcept;
+    static void newNoteForCategoryWithID(qi64 categoryID) noexcept;
+    static void editNoteWithID(qi64 noteID) noexcept;
 
-    bool first_show_{true};
+    bool firstTimeShow_{true};
     static inline qstr const SizesH0Key = "NotesWorkspace/Sizes/H0";
     static inline qstr const SizesH1Key = "NotesWorkspace/Sizes/H1";
 };

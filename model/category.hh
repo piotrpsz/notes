@@ -22,7 +22,7 @@ class Category {
     std::string name_{};
 
 public:
-    explicit Category(Row row);
+    explicit Category(Row&& row);
     Category() = default;
 
     // Getters
@@ -50,20 +50,16 @@ public:
         return *this;
     }
 
-    static std::optional<Category> with_id(i64 id, std::string const& fields = "*") noexcept;
-    static std::vector<Category> with_pid(i64 pid, std::string const& fields = "*") noexcept;
-    static std::optional<std::string> name_with_id(i64 id) noexcept;
+    static std::optional<Category> withID(i64 id, std::string const& fields = "*") noexcept;
+    static std::vector<Category> withPID(i64 pid, std::string const& fields = "*") noexcept;
+    static std::optional<std::string> nameWithID(i64 id) noexcept;
     static std::optional<std::vector<Category>> all() noexcept;
-    static bool existNoteWithTitle(i64 categoryID, std::string const& title) noexcept;
-
-
 
     [[nodiscard]] std::string str() const noexcept {
         return fmt::format("id:{}, pid:{}, name:{}", id_, pid_, name_);
     }
-    static std::optional<std::pair<std::vector<i64>, std::vector<std::string>>> chain_for(i64 id) noexcept;
-    static std::optional<std::vector<std::string>> names_chain_for(i64 id) noexcept;
-    static std::vector<i64> ids_subchain_for(i64 id) noexcept;
+    static std::optional<std::vector<std::string>> namesChainFor(i64 id) noexcept;
+    static std::vector<i64> idsSubchainFor(i64 id) noexcept;
 
 public:
     static inline std::vector<std::string> const CreationCmd = {

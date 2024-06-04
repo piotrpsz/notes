@@ -47,13 +47,13 @@
 EditDialog::EditDialog(Note&& note, QWidget *const parent) : EditDialog(parent) {
     setWindowTitle("Edit note");
     note_ = std::move(note);
-    chain_info_->setText(qstr::fromStdString(Tools::chain_info(note_->pid<i64>())));
+    chainInfoLabel_->setText(qstr::fromStdString(Tools::categoriesChainInfo(note_->pid<i64>())));
 
     title_->setText(note_.value().qtitle());
     description_->setText(note_.value().qdescription());
     editor_->setHtml(note_.value().qcontent());
 
-    connect(accept_btn_, &QPushButton::clicked, [&]() {
+    connect(acceptPushButton_, &QPushButton::clicked, [&]() {
         // Sprawdź czy stosowne pola mają zawartość.
         if (not valid())
             return;
@@ -74,7 +74,7 @@ EditDialog::EditDialog(Note&& note, QWidget *const parent) : EditDialog(parent) 
         accept();
     });
 
-    connect(cancel_btn_, &QPushButton::clicked, [this]() {
+    connect(cancelPushButton_, &QPushButton::clicked, [this]() {
         reject();
     });
 }
@@ -83,10 +83,10 @@ EditDialog::EditDialog(Note&& note, QWidget *const parent) : EditDialog(parent) 
 /// Nowa notatka dla wskazanej kategorii.
 EditDialog::EditDialog(qi64 const categoryID, QWidget *const parent) : EditDialog(parent) {
     setWindowTitle("New note");
-    chain_info_->setText(qstr::fromStdString(Tools::chain_info(categoryID)));
+    chainInfoLabel_->setText(qstr::fromStdString(Tools::categoriesChainInfo(categoryID)));
 
     // Próba zapisania nowej notatki do bazy danych.
-    connect(accept_btn_, &QPushButton::clicked, [this, categoryID] {
+    connect(acceptPushButton_, &QPushButton::clicked, [this, categoryID] {
         // Sprawdź czy stosowne pola mają zawartość.
         if (not valid())
             return;
@@ -102,12 +102,12 @@ EditDialog::EditDialog(qi64 const categoryID, QWidget *const parent) : EditDialo
             return;
         }
         else
-            note_id_ = note.id<i64>();
+            noteID_ = note.id<i64>();
         accept();
     });
 
     // Bye, bye
-    connect(cancel_btn_, &QPushButton::clicked, [this]() {
+    connect(cancelPushButton_, &QPushButton::clicked, [this]() {
         reject();
     });
 }
@@ -118,29 +118,30 @@ EditDialog::EditDialog(qi64 const categoryID, QWidget *const parent) : EditDialo
  *                                                                  *
  ********************************************************************/
 
+/// Bazowy kontruktor. Pozostałe konstruktory go wywołują.
 EditDialog::EditDialog(QWidget *const parent) :
         QDialog(parent),
         title_{new QLineEdit},
         description_{new QLineEdit},
         editor_{new Editor},
-        size_cbox_{new QComboBox},
-        font_face_cbx_{new QComboBox},
-        color_cbx_{new QComboBox},
-        accept_btn_{new QPushButton{"Accept"}},
-        cancel_btn_{new QPushButton{"Cancel"}},
-        chain_info_{new QLabel{"Dupa"}}
+        sizesComboBox_{new QComboBox},
+        facesComboBox_{new QComboBox},
+        colorsComboBox_{new QComboBox},
+        acceptPushButton_{new QPushButton{"Accept"}},
+        cancelPushButton_{new QPushButton{"Cancel"}},
+        chainInfoLabel_{new QLabel}
 {
     setSizeGripEnabled(true);
-    populate_font_size_cbx();
-    populate_font_face_cbx();
-    populate_color_cbx();
+    populateSizesComboBox();
+    populateFacesComboBox();
+    populateColorsComboBox();
 
     auto const buttons{new QHBoxLayout};
     buttons->setContentsMargins(0, 0, 0, 0);
     buttons->addStretch();
-    buttons->addWidget(cancel_btn_);
-    buttons->addWidget(accept_btn_);
-    accept_btn_->setDefault(true);
+    buttons->addWidget(cancelPushButton_);
+    buttons->addWidget(acceptPushButton_);
+    acceptPushButton_->setDefault(true);
 
     auto const separator{new QFrame};
     separator->setFrameShape(QFrame::HLine);
@@ -150,7 +151,7 @@ EditDialog::EditDialog(QWidget *const parent) :
     layout->setContentsMargins(8, 8, 8, 4);
 
     int row = 0;
-    layout->addWidget(chain_info_, row++, 0, 1, 2, Qt::AlignHCenter);
+    layout->addWidget(chainInfoLabel_, row++, 0, 1, 2, Qt::AlignHCenter);
 
     layout->addWidget(new QLabel("Tilte"), row, 0);
     layout->addWidget(title_, row++, 1);
@@ -183,37 +184,37 @@ editor_layout() const noexcept {
     auto const toolbar{new QToolBar};
     toolbar->setIconSize(QSize(16, 16));
 
-    auto const copy_action = new QAction(QIcon::fromTheme("edit-copy"), "Copy");
-    connect(copy_action, &QAction::triggered, [this]() {
+    auto const copyAction = new QAction(QIcon::fromTheme("edit-copy"), "Copy");
+    connect(copyAction, &QAction::triggered, [] {
         EventController::instance().send(event::CopyRequest);
     });
-    auto const cut_action = new QAction(QIcon::fromTheme("edit-cut"), "Cut");
-    connect(cut_action, &QAction::triggered, [this]() {
+    auto const cutAction = new QAction(QIcon::fromTheme("edit-cut"), "Cut");
+    connect(cutAction, &QAction::triggered, [] {
         EventController::instance().send(event::CutRequest);
     });
-    auto const paste_action = new QAction(QIcon::fromTheme("edit-paste"), "Paste");
-    connect(paste_action, &QAction::triggered, [this]() {
+    auto const pasteAction = new QAction(QIcon::fromTheme("edit-paste"), "Paste");
+    connect(pasteAction, &QAction::triggered, [] {
         EventController::instance().send(event::PasteRequest);
     });
-    auto const font_action = new QAction(QIcon::fromTheme("preferences-desktop-font"), "Font");
-    connect(font_action, &QAction::triggered, [this]() {
+    auto const fontAction = new QAction(QIcon::fromTheme("preferences-desktop-font"), "Font");
+    connect(fontAction, &QAction::triggered, [] {
         EventController::instance().send(event::SelectFontRequest);
     });
-    auto const color_action = new QAction(QIcon::fromTheme("color"), "Color");
-    connect(color_action, &QAction::triggered, [this]() {
+    auto const colorAction = new QAction(QIcon::fromTheme("color"), "Color");
+    connect(colorAction, &QAction::triggered, [] {
         EventController::instance().send(event::SelectColorRequest);
     });
 
     toolbar->addWidget(new QLabel("Font settings: "));
-    toolbar->addWidget(size_cbox_);
-    toolbar->addWidget(font_face_cbx_);
-    toolbar->addWidget(color_cbx_);
+    toolbar->addWidget(sizesComboBox_);
+    toolbar->addWidget(facesComboBox_);
+    toolbar->addWidget(colorsComboBox_);
     toolbar->addWidget(spacer);
-    toolbar->addAction(copy_action);
-    toolbar->addAction(cut_action);
-    toolbar->addAction(paste_action);
-    toolbar->addAction(font_action);
-    toolbar->addAction(color_action);
+    toolbar->addAction(copyAction);
+    toolbar->addAction(cutAction);
+    toolbar->addAction(pasteAction);
+    toolbar->addAction(fontAction);
+    toolbar->addAction(colorAction);
 
     auto const layout{new QVBoxLayout};
     layout->setContentsMargins(0, 0, 0, 0);
@@ -223,33 +224,32 @@ editor_layout() const noexcept {
 }
 
 void EditDialog::
-populate_font_size_cbx() const noexcept {
-    size_cbox_->setEditable(false);
+populateSizesComboBox() const noexcept {
+    sizesComboBox_->setEditable(false);
     for (int i = 8; i < 26; ++i)
-        size_cbox_->addItem(qstr::fromStdString(fmt::format("{}", i)));
-    size_cbox_->setCurrentText("10");
+        sizesComboBox_->addItem(qstr::fromStdString(fmt::format("{}", i)));
+    sizesComboBox_->setCurrentText("10");
 }
 
 void EditDialog::
-populate_color_cbx() const noexcept {
-    color_cbx_->addItem("Default");
-    color_cbx_->addItem("example");
-    color_cbx_->addItem("example");
-    color_cbx_->addItem("example");
-    color_cbx_->addItem("example");
+populateColorsComboBox() const noexcept {
+    colorsComboBox_->addItem("Colors");
+    colorsComboBox_->addItem("example");
+    colorsComboBox_->addItem("example");
+    colorsComboBox_->addItem("example");
+    colorsComboBox_->addItem("example");
 
-    color_cbx_->setItemData(1, color0, Qt::ForegroundRole);
-    color_cbx_->setItemData(2, color1, Qt::ForegroundRole);
-    color_cbx_->setItemData(3, color2, Qt::ForegroundRole);
-    color_cbx_->setItemData(4, color3, Qt::ForegroundRole);
-
+    colorsComboBox_->setItemData(1, color0, Qt::ForegroundRole);
+    colorsComboBox_->setItemData(2, color1, Qt::ForegroundRole);
+    colorsComboBox_->setItemData(3, color2, Qt::ForegroundRole);
+    colorsComboBox_->setItemData(4, color3, Qt::ForegroundRole);
 }
 
 void EditDialog::
-populate_font_face_cbx() const noexcept {
+populateFacesComboBox() const noexcept {
     auto const model = new QStandardItemModel(3, 1);
 
-    auto const root = new QStandardItem("face");
+    auto const root = new QStandardItem("Faces");
     model->setItem(0, root);
 
     auto const bold = new QStandardItem("bold");
@@ -270,9 +270,9 @@ populate_font_face_cbx() const noexcept {
     underline->setData(Underline, FaceRole);
     model->setItem(3, underline);
 
-    font_face_cbx_->setModel(model);
-    font_face_cbx_->setCurrentIndex(0);
-    font_face_cbx_->setMinimumWidth(font_face_cbx_->fontMetrics().boundingRect("underline").width() + 60);
+    facesComboBox_->setModel(model);
+    facesComboBox_->setCurrentIndex(0);
+    facesComboBox_->setMinimumWidth(facesComboBox_->fontMetrics().boundingRect("underline").width() + 60);
 
     connect(model, &QStandardItemModel::itemChanged, [bold, italic, underline](auto item) {
         u8 state = Normal;
@@ -286,12 +286,12 @@ populate_font_face_cbx() const noexcept {
 bool EditDialog::
 valid() noexcept {
     if (title_->text().trimmed().isEmpty()) {
-        QMessageBox::critical(this, "Warning", "The note must have a title");
+        QMessageBox::critical(this, "Warning", "The note must have a title!");
         title_->setFocus();
         return  false;
     }
     if (editor_->toPlainText().trimmed().isEmpty()) {
-        QMessageBox::critical(this, "Warning", "The note must contain some content.");
+        QMessageBox::critical(this, "Warning", "The note must contain some content!");
         editor_->setFocus();
         return  false;
     }

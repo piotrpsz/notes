@@ -36,7 +36,7 @@
 #include <fmt/core.h>
 
 NotesWorkspace::NotesWorkspace(QWidget *const parent) : QSplitter(Qt::Vertical, parent) {
-    setHandleWidth(1);
+    setHandleWidth(SPLITTER_HANDLE_WIDTH);
     addWidget(new NotesTableWidget);
     addWidget(new NoteWidget);
 
@@ -52,15 +52,13 @@ NotesWorkspace::~NotesWorkspace() {
     sts.save(SizesH1Key, data[1]);
 }
 
-/// Obsługa wydarzenia związanego z wyświetleniem. \n
-/// Obsługujemy bo chcemy ustawić rozmiary splittera.
 void NotesWorkspace::showEvent(QShowEvent *const event) {
     QSplitter::showEvent(event);
-    if (not first_show_) return;
+    if (not firstTimeShow_) return;
 
-    first_show_ = false;
+    firstTimeShow_ = false;
     auto const s = size();
-    auto h0 = int(60. * s.width() / 100.);
+    auto h0 = int(s.width() * PERCENTAGE_WIDTH);
     auto h1 = int(s.width() - h0 - handleWidth());
 
     Settings sts;
@@ -72,33 +70,24 @@ void NotesWorkspace::showEvent(QShowEvent *const event) {
     setSizes({h0, h1});
 }
 
-/// Odbiór i obsługa własnych zdarzeń.
-/// \param event - zdarzenie opakowujące własne zdarzenia.
 void NotesWorkspace::customEvent(QEvent* const event) {
     event->accept();
     auto const e = dynamic_cast<Event*>(event);
 
     switch (static_cast<int>(e->type())) {
         case event::NewNoteRequest:
-            if (auto args = e->data(); not args.empty()) {
-                if (auto value = args[0]; value.canConvert<qi64>())
-                    new_note(value.toInt());
-            }
+            if (auto data = e->data(); data.size() == 1)
+                newNoteForCategoryWithID(data[0].toInt());
             break;
         case event::EditNoteRequest:
-            if (auto args = e->data(); args.size() == 1) {
-                if (auto value = args[0]; value.canConvert<qi64>()) {
-                    edit_note(value.toInt());
-                }
-            }
+            if (auto data = e->data(); data.size() == 1)
+                editNoteWithID(data[0].toInt());
             break;
     }
 }
 
-/// Edycja nowej notatki.
-/// \param categoryID - numer ID kategorii, dla której będzie notatka.
-void NotesWorkspace::new_note(qi64 const categoryID) noexcept {
-    auto dialog = std::make_unique<EditDialog>(categoryID);
+void NotesWorkspace::newNoteForCategoryWithID(qi64 const categoryID) noexcept {
+    auto const dialog = std::make_unique<EditDialog>(categoryID);
     if (dialog->exec() == QDialog::Accepted) {
         EventController::instance().send(event::NoteDatabaseChanged,
                                          categoryID,
@@ -106,15 +95,13 @@ void NotesWorkspace::new_note(qi64 const categoryID) noexcept {
     }
 }
 
-/// Edycja istniejącej już notatki.
-/// \param noteID - numer ID notatki do edycji.
-void NotesWorkspace::edit_note(qi64 const noteID) noexcept {
+void NotesWorkspace::editNoteWithID(qi64 const noteID) noexcept {
     if (auto note = Note::withID(noteID); note) {
-        auto dialog = std::make_unique<EditDialog>(std::move(*note));
+        auto const dialog = std::make_unique<EditDialog>(std::move(*note));
         if (dialog->exec() == QDialog::Accepted) {
-            auto changed_note = dialog->get_note();
+            auto updatedNote = dialog->get_note();
             EventController::instance().send(event::NoteDatabaseChanged,
-                                             changed_note.pid<qi64>(),
+                                             updatedNote.pid<qi64>(),
                                              noteID);
         }
     }

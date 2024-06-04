@@ -35,43 +35,49 @@
 
 NotesTableToolbar::NotesTableToolbar(QWidget* const parent) :
     QToolBar(parent),
-    category_chain_{},
-    chain_info_{new QLabel}
+    categoryChain_{},
+    categoryChainLabel_{new QLabel}
 {
     // https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
 
     setIconSize(QSize(16, 16));
 
-    auto const move_action = new QAction(QIcon::fromTheme("folder-new"), "Move");
-    auto const add_action = new QAction(QIcon::fromTheme("list-add"), "Add");
-    auto const edt_action = new QAction(QIcon::fromTheme("accessories-text-editor"), "Edit");
-    auto const del_action = new QAction(QIcon::fromTheme("list-remove"), "Delete");
+    auto const moveAction = new QAction(QIcon::fromTheme("folder-new"), "Move");
+    auto const newAction = new QAction(QIcon::fromTheme("list-add"), "New");
+    auto const edtAction = new QAction(QIcon::fromTheme("accessories-text-editor"), "Edit");
+    auto const delAction = new QAction(QIcon::fromTheme("list-remove"), "Delete");
 
-    add_action->setToolTip("Create new category note");
-    edt_action->setToolTip("Edit selected note");
-    del_action->setToolTip("Remove selected note");
+    newAction->setToolTip("Create new note");
+    edtAction->setToolTip("Edit selected note");
+    delAction->setToolTip("Remove selected note");
+    moveAction->setToolTip("Move selected note to another category");
 
-    addWidget(chain_info_);
+    addWidget(categoryChainLabel_);
 
     auto spacer = new QWidget;
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     addWidget(spacer);
 
-    addAction(add_action);
-    addAction(edt_action);
-    addAction(del_action);
-    addAction(move_action);
+    addAction(newAction);
+    addAction(edtAction);
+    addAction(delAction);
+    addAction(moveAction);
 
-    connect(add_action, &QAction::triggered, [this]() {
-        EventController::instance().send(event::NewNoteRequest, qint64(current_category_id_));
+    // Użytkownik kliknął przycisk 'Add'.
+    connect(newAction, &QAction::triggered, [this]() {
+        if (currentCategoryID_ > 0)
+            EventController::instance().send(event::NewNoteRequest, qint64(currentCategoryID_));
     });
-    connect(edt_action, &QAction::triggered, []() {
+    // Użytkownik kliknął przycisk 'Edit'.
+    connect(edtAction, &QAction::triggered, []() {
         EventController::instance().send(event::EditNoteRequest);
     });
-    connect(del_action, &QAction::triggered, []() {
+    // Użytkownik kliknął przycisk 'Delete'.
+    connect(delAction, &QAction::triggered, []() {
         EventController::instance().send(event::RemoveCurrentNoteRequest);
     });
-    connect(move_action, &QAction::triggered, [] {
+    // Użytkownik kliknął przycisk 'Move'.
+    connect(moveAction, &QAction::triggered, [] {
         EventController::instance().send(event::MoveCurrentNoteRequest);
     });
 
@@ -83,11 +89,9 @@ void NotesTableToolbar::customEvent(QEvent* const event) {
     switch (int(e->type())) {
         case event::CategorySelected:
             if (auto data = e->data(); not data.empty()) {
-                if (auto value = data[0]; value.canConvert<int>()) {
-                    current_category_id_ = value.toInt();
-                    category_chain_ = Tools::chain_info(current_category_id_);
-                    chain_info_->setText(qstr::fromStdString(*category_chain_));
-                }
+                currentCategoryID_ = data[0].toInt();
+                categoryChain_ = Tools::categoriesChainInfo(currentCategoryID_);
+                categoryChainLabel_->setText(qstr::fromStdString(*categoryChain_));
             }
             break;
     }

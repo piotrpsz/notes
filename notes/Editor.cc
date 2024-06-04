@@ -58,14 +58,15 @@ Editor::Editor(QWidget* const parent) : QTextEdit(parent) {
                                        event::SelectColorRequest,
                                        event::SelectFontRequest);
 
-    connect(this, &QTextEdit::cursorPositionChanged, [&] {
-        auto const cursor = textCursor();
-        auto cf = cursor.charFormat();
-        auto c = cf.foreground().color();
-        auto f = cf.font();
-
-        fmt::print("r: {}, g: {}, b: {}, a: {} - {}\n", c.red(), c.green(), c.black(), c.alpha(), f.toString().toStdString());
-    });
+    // informacje pomocniecze o tekście po zmianie pozycji kursora
+//    connect(this, &QTextEdit::cursorPositionChanged, [&] {
+//        auto const cursor = textCursor();
+//        auto cf = cursor.charFormat();
+//        auto c = cf.foreground().color();
+//        auto f = cf.font();
+//
+//        fmt::print("r: {}, g: {}, b: {}, a: {} - {}\n", c.red(), c.green(), c.black(), c.alpha(), f.toString().toStdString());
+//    });
 }
 
 Editor::~Editor() {
@@ -83,18 +84,15 @@ void Editor::customEvent(QEvent* const event) {
             select_color();
             e->accept();
             break;
-        case event::CopyRequest:
-            fmt::print("copy request\n");
-            e->accept();
-            break;
-        case event::CutRequest:
-            fmt::print("cut request\n");
-            e->accept();
-            break;
-        case event::PasteRequest:
-            fmt::print("patse request\n");
-            e->accept();
-            break;
+//        case event::CopyRequest:
+//            e->accept();
+//            break;
+//        case event::CutRequest:
+//            e->accept();
+//            break;
+//        case event::PasteRequest:
+//            e->accept();
+//            break;
     }
 }
 

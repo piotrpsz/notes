@@ -56,12 +56,9 @@ void Browser::customEvent(QEvent* const event) {
     switch (int(e->type())) {
         case event::NoteSelected:
             if (auto data = e->data(); data.size() == 1) {
-                if (auto value = data[0]; value.canConvert<int>()) {
-                    auto noteID = value.toInt();
-                    if (auto note = Note::withID(noteID); note) {
-                        auto html = (*note).qcontent();
-                        setHtml(html);
-                    }
+                if (auto note = Note::withID(data[0].toInt()); note) {
+                    auto html = (*note).qcontent();
+                    setHtml(html);
                 }
             }
             break;

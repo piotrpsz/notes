@@ -36,12 +36,12 @@ MainWindow::MainWindow(QWidget *const parent) :
         QMainWindow(parent),
         splitter_{new QSplitter(Qt::Horizontal)}
 {
-    auto app_name = QCoreApplication::applicationName().toStdString();
-    auto app_ver = QCoreApplication::applicationVersion().toStdString();
-    auto title = fmt::format("{} ver. {}", app_name, app_ver);
+    auto const appName{QCoreApplication::applicationName().toStdString()};
+    auto const appVer{QCoreApplication::applicationVersion().toStdString()};
+    auto const title{fmt::format("{} ver. {}", appName, appVer)};
     setWindowTitle(qstr::fromStdString(title));
 
-    splitter_->setHandleWidth(1);
+    splitter_->setHandleWidth(SPLITTER_HANDLE_WIDTH);
     splitter_->addWidget(new CategoryTree);
     splitter_->addWidget(new NotesWorkspace);
     setCentralWidget(splitter_);
@@ -50,9 +50,9 @@ MainWindow::MainWindow(QWidget *const parent) :
 /// Wyświetlenie okna programu - odczyt i zastosowanie zapamiętanej
 /// geometrii okna z poprzedniego uruchomienia programu.
 void MainWindow::showEvent(QShowEvent *const event) {
-    if (not first_show_) return;
+    if (not firstTimeShow_) return;
 
-    first_show_ = false;
+    firstTimeShow_ = false;
     Settings sts;
 
     // Odtwórz rozmiar okna

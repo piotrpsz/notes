@@ -45,3 +45,7 @@ public:
         return {};
     }
 };
+
+namespace settings {
+    static int const DEFAULT_SPLITTER_HANDLE_WIDTH = 1;
+}
