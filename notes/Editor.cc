@@ -34,6 +34,7 @@
 
 Editor::Editor(QWidget* const parent) : QTextEdit(parent) {
     setAcceptRichText(true);
+    setUndoRedoEnabled(true);
 
     // ustawienie odstępu pomiędzy liniami
     auto block_fmt = textCursor().blockFormat();
@@ -55,6 +56,9 @@ Editor::Editor(QWidget* const parent) : QTextEdit(parent) {
                                        event::CopyRequest,
                                        event::CutRequest,
                                        event::PasteRequest,
+                                       event::UndoRequest,
+                                       event::RedoRequest,
+                                       event::SelectAllRequest,
                                        event::SelectColorRequest,
                                        event::SelectFontRequest);
 
@@ -84,15 +88,33 @@ void Editor::customEvent(QEvent* const event) {
             select_color();
             e->accept();
             break;
-//        case event::CopyRequest:
+        case event::CopyRequest:
+            if (textCursor().hasSelection())
+                copy();
+            e->accept();
+            break;
+        case event::CutRequest:
+            if (textCursor().hasSelection())
+                cut();
+            e->accept();
+            break;
+        case event::PasteRequest:
+            if (canPaste())
+                paste();
+            e->accept();
+            break;
+        case event::SelectAllRequest:
+            selectAll();
+            e->accept();
+            break;
+        case event::UndoRequest:
+            undo();
 //            e->accept();
-//            break;
-//        case event::CutRequest:
-//            e->accept();
-//            break;
-//        case event::PasteRequest:
-//            e->accept();
-//            break;
+            break;
+        case event::RedoRequest:
+            redo();
+            e->accept();
+            break;
     }
 }
 

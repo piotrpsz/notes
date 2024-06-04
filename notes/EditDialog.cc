@@ -176,11 +176,6 @@ QVBoxLayout *EditDialog::
 editor_layout() const noexcept {
     // https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
 
-    // Ikony po będą po prawej stronie. Aby tak się stało dodamy
-    // z lewej strony spacer który zepchnie je do prawej strony.
-    auto spacer = new QWidget;
-    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-
     auto const toolbar{new QToolBar};
     toolbar->setIconSize(QSize(16, 16));
 
@@ -205,16 +200,32 @@ editor_layout() const noexcept {
         EventController::instance().send(event::SelectColorRequest);
     });
 
+    auto const undoAction = new QAction(QIcon::fromTheme("edit-undo"), "Undo");
+    connect(undoAction, &QAction::triggered, [] {
+        EventController::instance().send(event::UndoRequest);
+    });
+    auto const redoAction = new QAction(QIcon::fromTheme("edit-redo"), "Redo");
+    connect(redoAction, &QAction::triggered, [] {
+        EventController::instance().send(event::RedoRequest);
+    });
+    auto const selectAllAction = new QAction(QIcon::fromTheme("edit-select-all"), "Select All");
+    connect(selectAllAction, &QAction::triggered, [] {
+        EventController::instance().send(event::SelectAllRequest);
+    });
+
     toolbar->addWidget(new QLabel("Font settings: "));
     toolbar->addWidget(sizesComboBox_);
     toolbar->addWidget(facesComboBox_);
     toolbar->addWidget(colorsComboBox_);
-    toolbar->addWidget(spacer);
+    toolbar->addAction(fontAction);
+    toolbar->addAction(colorAction);
+    toolbar->addWidget(spacer());
+    toolbar->addAction(undoAction);
+    toolbar->addAction(redoAction);
     toolbar->addAction(copyAction);
     toolbar->addAction(cutAction);
     toolbar->addAction(pasteAction);
-    toolbar->addAction(fontAction);
-    toolbar->addAction(colorAction);
+    toolbar->addAction(selectAllAction);
 
     auto const layout{new QVBoxLayout};
     layout->setContentsMargins(0, 0, 0, 0);

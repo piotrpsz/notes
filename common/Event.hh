@@ -69,7 +69,9 @@ namespace event {
         CopyRequest,
         CutRequest,
         PasteRequest,
-
+        UndoRequest,
+        RedoRequest,
+        SelectAllRequest,
         NoteDatabaseChanged,
         NoteSelected,
     };

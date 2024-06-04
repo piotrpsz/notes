@@ -78,6 +78,11 @@ private:
     void populateFacesComboBox() const noexcept;
     void populateColorsComboBox() const noexcept;
     [[nodiscard]] QVBoxLayout* editor_layout() const noexcept;
+    static QWidget* spacer() noexcept {
+        auto spacer = new QWidget;
+        spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        return spacer;
+    }
 
     static inline QColor const color0{0xcf, 0x8e, 0x6d};
     static inline QColor const color1{0x2a, 0xac, 0xb8};
