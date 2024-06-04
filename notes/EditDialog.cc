@@ -160,22 +160,6 @@ EditDialog::EditDialog(QWidget *const parent) :
     layout->addLayout(buttons, row, 0, 1, 2);
 
     setLayout(layout);
-
-    // Sizes - ComboBox action
-    connect(sizesComboBox_, &QComboBox::currentTextChanged, [this](auto text) {
-        editor_->setFontPointSize(text.toInt());
-        editor_->setFocus();
-    });
-    // Colors - ComboBox action
-    connect(colorsComboBox_, &QComboBox::currentIndexChanged, [this](auto index) {
-        if (index > 0) {
-            auto const  v = colorsComboBox_->itemData(index, ColorRole);
-            auto const textColor = QColor::fromRgba(v.toUInt());
-            editor_->setTextColor(textColor);
-            editor_->setFocus();
-        }
-    });
-
 }
 
 void EditDialog::
@@ -254,6 +238,11 @@ populateSizesComboBox() const noexcept {
     for (int i = 8; i < 26; ++i)
         sizesComboBox_->addItem(qstr::fromStdString(fmt::format("{}", i)));
     sizesComboBox_->setCurrentText("10");
+
+    connect(sizesComboBox_, &QComboBox::currentTextChanged, [this](auto text) {
+        editor_->setFontPointSize(text.toInt());
+        editor_->setFocus();
+    });
 }
 
 void EditDialog::
@@ -273,6 +262,15 @@ populateColorsComboBox() const noexcept {
     colorsComboBox_->setItemData(2, color1.rgba(), ColorRole);
     colorsComboBox_->setItemData(3, color2.rgba(), ColorRole);
     colorsComboBox_->setItemData(4, color3.rgba(), ColorRole);
+
+    connect(colorsComboBox_, &QComboBox::currentIndexChanged, [this](auto index) {
+        if (index > 0) {
+            auto const  v = colorsComboBox_->itemData(index, ColorRole);
+            auto const textColor = QColor::fromRgba(v.toUInt());
+            editor_->setTextColor(textColor);
+            editor_->setFocus();
+        }
+    });
 }
 
 void EditDialog::
@@ -304,12 +302,19 @@ populateFacesComboBox() const noexcept {
     facesComboBox_->setCurrentIndex(0);
     facesComboBox_->setMinimumWidth(facesComboBox_->fontMetrics().boundingRect("underline").width() + 60);
 
-    connect(model, &QStandardItemModel::itemChanged, [bold, italic, underline](auto item) {
-        u8 state = Normal;
-        if (bold->checkState() & Qt::Checked) state |= Bold;
-        if (italic->checkState() & Qt::Checked) state |= Italic;
-        if (underline->checkState() & Qt::Checked) state |= Underline;
-        // TODO send event?
+    connect(model, &QStandardItemModel::itemChanged, [this, bold, italic, underline](auto item) {
+        if (item == bold) {
+            auto const flag = item->data(Qt::CheckStateRole) == Qt::Checked;
+            editor_->setFontWeight(flag ? QFont::Bold : QFont::Normal);
+        }
+        if (item == italic) {
+            auto const flag = item->data(Qt::CheckStateRole) == Qt::Checked;
+            editor_->setFontItalic(flag);
+        }
+        if (item == underline) {
+            auto const flag = item->data(Qt::CheckStateRole) == Qt::Checked;
+            editor_->setFontUnderline(flag);
+        }
     });
 }
 
