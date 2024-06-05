@@ -25,6 +25,7 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include "Browser.hh"
+#include "Settings.hh"
 #include "../common/EventController.hh"
 #include "../model/note.hh"
 #include <QEvent>
@@ -35,12 +36,19 @@ Browser::Browser(QWidget* const parent) : QTextEdit(parent) {
     setReadOnly(true);
 
     // ustawienie odstępu pomiędzy liniami
-    auto block_fmt = textCursor().blockFormat();
-    block_fmt.setLineHeight(5, QTextBlockFormat::LineDistanceHeight);
-    textCursor().setBlockFormat(block_fmt);
+    auto format = textCursor().blockFormat();
+    format.setLineHeight(settings::DEFAULT_LINE_DISTANCE, QTextBlockFormat::LineDistanceHeight);
+    textCursor().setBlockFormat(format);
+
+    // ustawinie fontu
+    QFont font;
+    font.setFamily(settings::DEFAULT_FONT_FAMILY.c_str());    // "Noto Sans Regular"
+    font.setKerning(true);
+    font.setPointSize(settings::DEFAULT_FONT_SIZE);
+    setFont(font);
 
     // ustawinie długości TAB
-    setTabStopDistance(5 * fontMetrics().horizontalAdvance('-') - 2.0);
+    setTabStopDistance(settings::DEFAULT_TAB_STOP * fontMetrics().horizontalAdvance('-') - 2.0);
 
     EventController::instance().append(this,
                                        event::NoteSelected,

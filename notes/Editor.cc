@@ -25,6 +25,7 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include "Editor.hh"
+#include "Settings.hh"
 #include "../common/EventController.hh"
 #include <QFont>
 #include <QKeyEvent>
@@ -38,18 +39,18 @@ Editor::Editor(QWidget* const parent) : QTextEdit(parent) {
 
     // ustawienie odstępu pomiędzy liniami
     auto block_fmt = textCursor().blockFormat();
-    block_fmt.setLineHeight(DEFAULT_LINE_DISTANCE, QTextBlockFormat::LineDistanceHeight);
+    block_fmt.setLineHeight(settings::DEFAULT_LINE_DISTANCE, QTextBlockFormat::LineDistanceHeight);
     textCursor().setBlockFormat(block_fmt);
 
     // ustawinie fontu
     QFont font;
-    font.setFamily("Menlo");    // "Noto Sans Regular"
+    font.setFamily(settings::DEFAULT_FONT_FAMILY.c_str());    // "Noto Sans Regular"
     font.setKerning(true);
-    font.setPointSize(DEFAULT_FONT_HEIGHT);
+    font.setPointSize(settings::DEFAULT_FONT_SIZE);
     setFont(font);
 
     // ustawinie długości TAB
-    setTabStopDistance(DEFAULT_TAB_STOP * fontMetrics().horizontalAdvance('-') - 2.0);
+    setTabStopDistance(settings::DEFAULT_TAB_STOP * fontMetrics().horizontalAdvance('-') - 2.0);
 
 
     EventController::instance().append(this,

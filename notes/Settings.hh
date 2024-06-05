@@ -27,6 +27,7 @@
 -------------------------------------------------------------------*/
 #include <QSettings>
 #include <optional>
+#include <string>
 #include "types.hh"
 
 /*------- class:
@@ -47,5 +48,8 @@ public:
 };
 
 namespace settings {
-    static int const DEFAULT_SPLITTER_HANDLE_WIDTH = 1;
+    static inline std::string const DEFAULT_FONT_FAMILY = "Menlo";
+    static int const DEFAULT_FONT_SIZE = 12;
+    static int const DEFAULT_TAB_STOP = 5;
+    static int const DEFAULT_LINE_DISTANCE = 5;
 }
