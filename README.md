@@ -28,3 +28,4 @@ Through copy/paste operations you can cooperate with external content sources.<b
 The note editor is simple but supports many operations. It has what it takes (at least for me).
 
 ![scr_notes_editor.png](images/scr_notes_editor.png)
+
