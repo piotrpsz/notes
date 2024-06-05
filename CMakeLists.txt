@@ -80,6 +80,7 @@ add_executable(notes main.cc
         notes/TreeDialog.hh
         notes/CategoryTreeBrowser.cpp
         notes/CategoryTreeBrowser.hh
+        notes/EditorBase.hh
 )
 target_link_libraries(notes
         Qt::Core Qt::Gui Qt::Widgets

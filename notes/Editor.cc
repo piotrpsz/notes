@@ -25,7 +25,6 @@
 /*------- include files:
 -------------------------------------------------------------------*/
 #include "Editor.hh"
-#include "Settings.hh"
 #include "../common/EventController.hh"
 #include <QFont>
 #include <QKeyEvent>
@@ -33,25 +32,8 @@
 #include <QColorDialog>
 #include <fmt/core.h>
 
-Editor::Editor(QWidget* const parent) : QTextEdit(parent) {
-    setAcceptRichText(true);
+Editor::Editor(QWidget* const parent) : EditorBase(parent) {
     setUndoRedoEnabled(true);
-
-    // ustawienie odstępu pomiędzy liniami
-    auto block_fmt = textCursor().blockFormat();
-    block_fmt.setLineHeight(settings::DEFAULT_LINE_DISTANCE, QTextBlockFormat::LineDistanceHeight);
-    textCursor().setBlockFormat(block_fmt);
-
-    // ustawinie fontu
-    QFont font;
-    font.setFamily(settings::DEFAULT_FONT_FAMILY.c_str());    // "Noto Sans Regular"
-    font.setKerning(true);
-    font.setPointSize(settings::DEFAULT_FONT_SIZE);
-    setFont(font);
-
-    // ustawinie długości TAB
-    setTabStopDistance(settings::DEFAULT_TAB_STOP * fontMetrics().horizontalAdvance('-') - 2.0);
-
 
     EventController::instance().append(this,
                                        event::CopyRequest,

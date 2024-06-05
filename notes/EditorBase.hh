@@ -20,29 +20,34 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.#pragma once
 //
-// Created by piotr on 30.04.24.
-//
+// Created by Piotr Pszczółkowski on 05.06.24.
 #pragma once
-
-// https://doc.qt.io/qt-6.2/qtwidgets-mainwindows-application-example.html
 
 /*------- include files:
 -------------------------------------------------------------------*/
-#include "EditorBase.hh"
+#include <QTextEdit>
+#include "Settings.hh"
 
-/*------- forward declarations:
--------------------------------------------------------------------*/
-class QEvent;
-class QKeyEvent;
-
-class Editor : public EditorBase {
+class EditorBase : public QTextEdit {
     Q_OBJECT
 public:
-    explicit Editor(QWidget* = nullptr);
-    ~Editor() override;
-private:
-    void customEvent(QEvent*) override;
-    void keyPressEvent(QKeyEvent*) override;
-    void select_color() noexcept;
-    void select_font() noexcept;
+    explicit EditorBase(QWidget* const parent = nullptr) : QTextEdit(parent) {
+        setAcceptRichText(true);
+
+        // ustawienie odstępu pomiędzy liniami
+        auto format = textCursor().blockFormat();
+        format.setLineHeight(settings::DEFAULT_LINE_DISTANCE, QTextBlockFormat::LineDistanceHeight);
+        textCursor().setBlockFormat(format);
+
+        // ustawinie fontu
+        QFont font;
+        font.setFamily(settings::DEFAULT_FONT_FAMILY.c_str());    // "Noto Sans Regular"
+        font.setKerning(true);
+        font.setPointSize(settings::DEFAULT_FONT_SIZE);
+        setFont(font);
+
+        // ustawinie długości TAB
+        setTabStopDistance(settings::DEFAULT_TAB_STOP * fontMetrics().horizontalAdvance('-') - 2.0);
+    }
+    ~EditorBase() override = default;
 };

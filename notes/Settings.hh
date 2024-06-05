@@ -49,7 +49,7 @@ public:
 
 namespace settings {
     static inline std::string const DEFAULT_FONT_FAMILY = "Menlo";
-    static int const DEFAULT_FONT_SIZE = 12;
+    static int const DEFAULT_FONT_SIZE = 11;
     static int const DEFAULT_TAB_STOP = 5;
     static int const DEFAULT_LINE_DISTANCE = 5;
 }
