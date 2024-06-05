@@ -2,6 +2,7 @@
 GUI desktop program for managing notes.<br>
 The program is written in C++ and uses the Qt library as the GUI.<br>
 This is my own implementation of a note management program.<br>
+Something like evernote and other similar programs (but my own).<br>
 <b>But it's free and cross-platform</b>.<br>
 I ran it on Linux and macOS, I don't know if it works on Windows (but I guess it should).
 
