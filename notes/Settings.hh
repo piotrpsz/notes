@@ -31,6 +31,21 @@
 #include <fmt/core.h>
 #include "types.hh"
 
+
+namespace settings {
+    static inline std::string const DEFAULT_FONT_FAMILY = "Menlo";
+    static int const DEFAULT_FONT_SIZE = 11;
+    static int const DEFAULT_TAB_STOP = 5;
+    static int const DEFAULT_LINE_DISTANCE = 5;
+    static int const MAJOR_APP_VERSION = 0;
+    static int const MINOR_APP_VERSION = 1;
+    static int const PATCH_APP_VERSION = 0;
+
+    static inline std::string appVersion() noexcept {
+        return fmt::format("{}.{}.{}", MAJOR_APP_VERSION, MINOR_APP_VERSION, PATCH_APP_VERSION);
+    }
+}
+
 /*------- class:
 -------------------------------------------------------------------*/
 class Settings : public QSettings {
@@ -48,16 +63,3 @@ public:
     }
 };
 
-namespace settings {
-    static inline std::string const DEFAULT_FONT_FAMILY = "Menlo";
-    static int const DEFAULT_FONT_SIZE = 11;
-    static int const DEFAULT_TAB_STOP = 5;
-    static int const DEFAULT_LINE_DISTANCE = 5;
-    static int const MAJOR_APP_VERSION = 0;
-    static int const MINOR_APP_VERSION = 1;
-    static int const PATCH_APP_VERSION = 0;
-
-    static inline std::string appVersion() noexcept {
-        return fmt::format("{}.{}.{}", MAJOR_APP_VERSION, MINOR_APP_VERSION, PATCH_APP_VERSION);
-    }
-}
