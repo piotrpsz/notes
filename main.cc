@@ -29,6 +29,7 @@
 #include "model/note.hh"
 #include "sqlite/sqlite.hh"
 #include "notes/MainWindow.hh"
+#include "notes/Settings.hh"
 #include <QApplication>
 #include <QDir>
 #include <fmt/core.h>
@@ -67,7 +68,7 @@ int main(int argc, char *argv[]) {
     }
 
     QCoreApplication::setApplicationName("notes");
-    QCoreApplication::setApplicationVersion("0.0.1");
+    QCoreApplication::setApplicationVersion(settings::appVersion().c_str());
     QCoreApplication::setOrganizationName("Piotr Pszczółkowski");
     QCoreApplication::setOrganizationDomain("beesoft.pl");
 
