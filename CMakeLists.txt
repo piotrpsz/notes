@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.27)
-project(notes)
+project(cnotes)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_AUTOMOC ON)
@@ -28,7 +28,7 @@ find_package(Qt6 COMPONENTS
         Widgets
         REQUIRED)
 
-add_executable(notes main.cc
+add_executable(cnotes main.cc
         sqlite/sqlite.cc
         sqlite/sqlite.hh
         sqlite/logger.hh
@@ -82,13 +82,11 @@ add_executable(notes main.cc
         notes/CategoryTreeBrowser.hh
         notes/EditorBase.hh
 )
-target_link_libraries(notes
+target_link_libraries(cnotes
         Qt::Core Qt::Gui Qt::Widgets
         sqlite3
         fmt::fmt
         range-v3::meta range-v3::concepts range-v3::range-v3
-        date::date
-        date::date-tz
+        date::date date::date-tz
         glaze::glaze
-        curl
 )

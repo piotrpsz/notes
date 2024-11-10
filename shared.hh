@@ -3,7 +3,10 @@
 //
 #pragma once
 
+#include <pwd.h>
 #include <array>
+#include <iostream>
+#include <format>
 #include <cstdint>
 #include <filesystem>
 #include <vector>
@@ -16,6 +19,7 @@
 #include <fmt/core.h>
 #include <range/v3/all.hpp>
 #include <qglobal.h>
+#include <QString>
 
 using u8 = uint8_t;
 using u16 = uint16_t;
@@ -32,12 +36,35 @@ using isize = qsizetype;
 using qstr = QString;
 using qvar = QVariant;
 
-
 namespace fs = std::filesystem;
+namespace rng = ranges;
+namespace vws = rng::views;
+
 
 namespace shared {
-    namespace rng = ranges;
-    namespace vws = rng::views;
+    static inline QString const ORGANIZATION {"beesoft, Piotr Pszczółkowski"};
+    static inline QString const DOMAIN{"beesoft.pl"};
+    static inline QString const VERSION{"0.2.0"};
+    static inline QString const PROGRAM{"notes"};
+
+    static std::string home_dir() {
+        if (struct passwd* pw = getpwuid(getuid()))
+            return pw->pw_dir;
+        return {};
+    }
+
+    /// Create directory with all subdirectories.
+    static inline bool create_dirs(std::string const& path) noexcept {
+        if (fs::exists(path))
+            return true;
+
+        std::error_code ec{};
+        if (fs::create_directories(path, ec))
+            return true;
+
+        std::cerr << ec.message() << std::endl;
+        return {};
+    }
 
     /// Convert span of bytes to string.
     static inline std::string span2str(std::span<u8> data) noexcept {

@@ -30,11 +30,14 @@
 #include "sqlite/sqlite.hh"
 #include "notes/MainWindow.hh"
 #include "notes/Settings.hh"
+#include "shared.hh"
 #include <QApplication>
 #include <QDir>
 #include <fmt/core.h>
 #include <string>
-
+#include <iostream>
+#include <format>
+using namespace std;
 
 bool create_cmds(SQLite const& db, std::vector<std::string> const& commands) noexcept {
     for (auto const& cmd : commands) {
@@ -44,17 +47,20 @@ bool create_cmds(SQLite const& db, std::vector<std::string> const& commands) noe
     return true;
 }
 
-
+/// Open the database, if that fails create a new database.
 bool open_or_create_database() noexcept {
-    using namespace std::string_literals;
-    static auto const DatabasePath = (QDir::homePath() + "/notes.sqlite").toStdString();
+    auto const database_dir = shared::home_dir() + "/.beesoft";
+    if (!shared::create_dirs(database_dir))
+        return {};
+
+    auto const database_path = database_dir + "/notes.sqlite";
 
     // Try to open.
-    if (SQLite::instance().open(DatabasePath))
+    if (SQLite::instance().open(database_path))
         return true;
 
     // Can't open so create one.
-    return SQLite::instance().create(DatabasePath, [](SQLite const& db){
+    return SQLite::instance().create(database_path, [](SQLite const& db){
         // Create tables.
         return create_cmds(db, Category::CreationCmd) and create_cmds(db, Note::CreationCmd);
     }, false);
@@ -62,15 +68,15 @@ bool open_or_create_database() noexcept {
 
 
 int main(int argc, char *argv[]) {
+    QCoreApplication::setApplicationName(shared::PROGRAM);
+    QCoreApplication::setApplicationVersion(settings::appVersion().c_str());
+    QCoreApplication::setOrganizationName(shared::ORGANIZATION);
+    QCoreApplication::setOrganizationDomain(shared::DOMAIN);
+
     if (not open_or_create_database()) {
-        fmt::print(stderr, "Database creation error\n");
+        cout << format("Database could not be created. Exiting...\n");
         return 1;
     }
-
-    QCoreApplication::setApplicationName("notes");
-    QCoreApplication::setApplicationVersion(settings::appVersion().c_str());
-    QCoreApplication::setOrganizationName("Piotr Pszczółkowski");
-    QCoreApplication::setOrganizationDomain("beesoft.pl");
 
     QApplication app(argc, argv);
     MainWindow win;
